@@ -10,7 +10,8 @@
     ],
     "require": {
         "php":  ">=7.0.0",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "slaxweb/database": "dev-develop"
     },
     "require-dev": {
         "codeception/codeception": "~2.2",
