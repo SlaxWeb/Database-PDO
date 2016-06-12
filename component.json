@@ -1,0 +1,16 @@
+{
+    "name": "database-pdo",
+    "description": "PDO Database Library Sub Component for SlaxWeb Framework",
+    "type": "sub",
+    "providers": {
+        "app": [],
+        "commands": [],
+        "hooks": []
+    },
+    "configFiles": [],
+    "subcomponents": {
+        "list": {},
+        "required": false,
+        "multi": false
+    }
+}

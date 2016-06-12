@@ -1,0 +1,5 @@
+composer.lock
+vendor/
+.tags
+
+tests/_output/*
