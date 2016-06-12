@@ -74,7 +74,7 @@ class Library implements \SlaxWeb\Database\LibraryInterface
         $query = "INSERT INTO {$table} (\""
             . implode("\",\"", array_keys($data))
             . "\") VALUES ("
-            . str_repeat("?,", count($data))
+            . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
         if (($statement = $this->_pdo->prepare($query)) === false) {
             $this->_error = new Error($this->_pdo->errorInfo()[2]);
