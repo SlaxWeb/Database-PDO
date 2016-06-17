@@ -16,10 +16,10 @@ namespace SlaxWeb\DatabasePDO;
 
 use PDO;
 use SlaxWeb\Database\Error;
-use SlaxWeb\Database\Result;
 use SlaxWeb\Database\Exception\NoErrorException;
+use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
-class Library implements \SlaxWeb\Database\LibraryInterface
+class Library implements \SlaxWeb\Database\Interfaces\Library
 {
     /**
      * SQL Object Delimiter
@@ -120,7 +120,7 @@ class Library implements \SlaxWeb\Database\LibraryInterface
      *
      * @return \SlaxWeb\DatabasePDO\Result
      */
-    public function fetch(): Result
+    public function fetch(): ResultInterface
     {
         return new Result($this->_stmnt->fetchAll());
     }
