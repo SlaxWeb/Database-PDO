@@ -16,6 +16,7 @@ namespace SlaxWeb\DatabasePDO;
 
 use PDO;
 use SlaxWeb\Database\Error;
+use SlaxWeb\Database\Result;
 use SlaxWeb\Database\Exception\NoErrorException;
 
 class Library implements \SlaxWeb\Database\LibraryInterface
@@ -35,6 +36,13 @@ class Library implements \SlaxWeb\Database\LibraryInterface
      * @var \PDO
      */
     protected $_pdo = null;
+
+    /**
+     * Last Executed Statement
+     *
+     * @var \PDOStatement
+     */
+    protected $_stmnt = null;
 
     /**
      * Database Error Object
@@ -71,12 +79,12 @@ class Library implements \SlaxWeb\Database\LibraryInterface
      */
     public function execute(string $query, array $data): bool
     {
-        if (($statement = $this->_pdo->prepare($query)) === false) {
+        if (($this->_stmnt = $this->_pdo->prepare($query)) === false) {
             $this->_error = new Error($this->_pdo->errorInfo()[2]);
             return false;
         }
-        if ($statement->execute(array_values($data)) === false) {
-            $this->_error = new Error($statement->errorInfo()[2]);
+        if ($this->_stmnt->execute(array_values($data)) === false) {
+            $this->_error = new Error($this->_stmnt->errorInfo()[2]);
             return false;
         }
         return true;
@@ -102,6 +110,19 @@ class Library implements \SlaxWeb\Database\LibraryInterface
             . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
         return $this->execute($query, $data);
+    }
+
+    /**
+     * Fetch Results
+     *
+     * It fetches the results from the last executed statement, creates the Result
+     * object and returns it.
+     *
+     * @return \SlaxWeb\DatabasePDO\Result
+     */
+    public function fetch(): Result
+    {
+        return new Result($this->_stmnt->fetchAll());
     }
 
     /**
