@@ -71,9 +71,9 @@ class Library implements \SlaxWeb\Database\LibraryInterface
     public function insert(string $table, array $data): bool
     {
         $table = "{$this->_delim}{$table}{$this->_delim}";
-        $query = "INSERT INTO {$table} (\""
-            . implode("\",\"", array_keys($data))
-            . "\") VALUES ("
+        $query = "INSERT INTO {$table} ({$this->_delim}"
+            . implode("{$this->_delim},{$this->_delim}", array_keys($data))
+            . "{$this->_delim}) VALUES ("
             . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
         if (($statement = $this->_pdo->prepare($query)) === false) {
