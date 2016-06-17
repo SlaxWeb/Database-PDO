@@ -58,6 +58,31 @@ class Library implements \SlaxWeb\Database\LibraryInterface
     }
 
     /**
+     * Execute Query
+     *
+     * Executes the received query and binds the received parameters into the query
+     * to decrease the chance of an SQL injection. Returns bool(true) if query was
+     * successfuly executed, and bool(false) if it was not. If the query yielded
+     * a result set, a Result object will be populated.
+     *
+     * @param string $query The Query to be executed
+     * @param array $data Data to be bound into the Query
+     * @return bool
+     */
+    public function execute(string $query, array $data): bool
+    {
+        if (($statement = $this->_pdo->prepare($query)) === false) {
+            $this->_error = new Error($this->_pdo->errorInfo()[2]);
+            return false;
+        }
+        if ($statement->execute(array_values($data)) === false) {
+            $this->_error = new Error($statement->errorInfo()[2]);
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Insert row
      *
      * Inserts a row into the database with the provided data. Returns bool(true)
@@ -76,15 +101,7 @@ class Library implements \SlaxWeb\Database\LibraryInterface
             . "{$this->_delim}) VALUES ("
             . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
-        if (($statement = $this->_pdo->prepare($query)) === false) {
-            $this->_error = new Error($this->_pdo->errorInfo()[2]);
-            return false;
-        }
-        if ($statement->execute(array_values($data)) === false) {
-            $this->_error = new Error($statement->errorInfo()[2]);
-            return false;
-        }
-        return true;
+        return $this->execute($query, $data);
     }
 
     /**

@@ -31,21 +31,17 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * Test Insert
+     * Test Execute Query
      *
-     * Ensure the insert method works as intended, that it calls the appropriate
+     * Ensure that the execute method works properly, that it calls the appropriate
      * methods to the PDO and PDOStatemenet objects.
      *
-     * @return false
+     * @return void
      */
-    public function testInsert()
+    public function testExecute()
     {
         $data = ["foo" => "bar", "baz" => "qux"];
-        $testQuery = "INSERT INTO \"{$this->_testTable}\" (\""
-            . implode("\",\"", array_keys($data))
-            . "\") VALUES ("
-            . rtrim(str_repeat("?,", count($data)), ",")
-            . ");";
+        $testQuery = "query";
 
         $pdo = $this->createMock("PDO");
         $statement = $this->createMock("PDOStatement");
@@ -67,6 +63,36 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
 
         $lib->__construct($pdo);
 
+        $this->assertTrue($lib->execute($testQuery, $data));
+    }
+
+    /**
+     * Test Insert
+     *
+     * Ensure the insert method works as intended, that it calls the execute method.
+     *
+     * @return void
+     */
+    public function testInsert()
+    {
+        $data = ["foo" => "bar", "baz" => "qux"];
+        $testQuery = "INSERT INTO \"{$this->_testTable}\" (\""
+            . implode("\",\"", array_keys($data))
+            . "\") VALUES ("
+            . rtrim(str_repeat("?,", count($data)), ",")
+            . ");";
+
+        $lib = $this->getMockBuilder(\SlaxWeb\DatabasePDO\Library::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["execute"])
+            ->getMock();
+
+        $lib->expects($this->once())
+            ->method("execute")
+            ->with($testQuery, $data)
+            ->willReturn(true);
+
+        $lib->__construct($this->createMock("PDO"));
         $this->assertTrue($lib->insert($this->_testTable, $data));
     }
 }
