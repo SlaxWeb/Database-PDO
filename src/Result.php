@@ -112,4 +112,23 @@ class Result implements ResultInterface
     {
         return $this->_rows;
     }
+
+    /**
+     * Get Row
+     *
+     * Returns the row object to the caller. If the row does not exists, an exception
+     * is thrown.
+     *
+     * @return \stdClass
+     *
+     * @exceptions \SlaxWeb\Database\Exception\ResultRowNotFoundException
+     */
+    public function get(): \stdClass
+    {
+        if (isset($this->_rawData[$this->_currRow]) === false) {
+            // @todo: throw exception
+        }
+
+        return $this->_rawData[$this->_currRow];
+    }
 }
