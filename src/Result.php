@@ -66,4 +66,37 @@ class Result implements ResultInterface
     {
         return isset($this->_rawData[++$this->_currRow]);
     }
+
+    /**
+     * Previous row
+     *
+     * Move the internal pointer to the previous row of the result array. If there
+     * is no row found under the previous index, bool(false) is returned, otherwise
+     * bool(true) is returned.
+     *
+     * @return bool
+     */
+    public function prev(): bool
+    {
+        return isset($this->_rawData[--$this->_currRow]);
+    }
+
+    /**
+     * Jump to row
+     *
+     * Move the internal pointer to the passed in row of the result array. If there
+     * is no row found under the passed in row, bool(false) is returned, otherwise
+     * bool(true) is returned.
+     *
+     * @param int $row Row number
+     * @return bool
+     */
+    public function row(int $row): bool
+    {
+        if (isset($this->_rawData[--$row])) {
+            $this->_currRow = $row;
+            return true;
+        }
+        return false;
+    }
 }
