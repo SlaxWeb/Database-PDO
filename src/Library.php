@@ -122,7 +122,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function fetch(): ResultInterface
     {
-        return new Result($this->_stmnt->fetchAll());
+        return new Result($this->_stmnt->fetchAll(PDO::FETCH_OBJ));
     }
 
     /**
