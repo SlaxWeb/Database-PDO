@@ -1,9 +1,10 @@
 <?php
 /**
- * PDO Database Library
+ * Database Result Class
  *
- * PDO Database Library for SlaxWeb Framework provides connection to a RDB with
- * the help of the PHP Data Objects, or PDO.
+ * The result class holds the result of an executed statement, which is easy to
+ * navigate and retrieve data from. It also provides functionality to easily update
+ * the programatically changed data in a result set.
  *
  * @package   SlaxWeb\DatabasePDO
  * @author    Tomaz Lovrec <tomaz.lovrec@gmail.com>
