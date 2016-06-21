@@ -55,6 +55,30 @@ class Result implements ResultInterface
     }
 
     /**
+     * Magic Get Method
+     *
+     * Retrieves the result row column value and returns it to the caller. If the
+     * internal index is not pointing to a valid row, or the requested column is
+     * not part of the result set, an exception is thrown.
+     *
+     * @param string $name Name of the column
+     * @return mixed
+     *
+     * @exceptions \SlaxWeb\Database\Exception\ResultRowNotFoundException
+     *             \SlaxWeb\Database\Exception\ColumnNotFoundException
+     */
+    public function __get(string $name)
+    {
+        if (isset($this->_rawData[$this->_currRow]) === false) {
+            // @todo: throw exception
+        }
+        if (isset($this->_rawData[$this->_currRow]->{$name}) === false) {
+            // @todo: throw exception
+        }
+        return $this->_rawData[$this->_currRow]->{$name};
+    }
+
+    /**
      * Next row
      *
      * Move the internal pointer to the next row of the result array. If there is
