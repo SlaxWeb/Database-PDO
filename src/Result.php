@@ -100,4 +100,16 @@ class Result implements ResultInterface
         }
         return false;
     }
+
+    /**
+     * Get row count
+     *
+     * Get the row count of the result set.
+     *
+     * @return int
+     */
+    public function rowCount(): int
+    {
+        return $this->_rows;
+    }
 }
