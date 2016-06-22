@@ -15,8 +15,10 @@
 namespace SlaxWeb\DatabasePDO;
 
 use PDO;
+use PDOStatement;
 use SlaxWeb\Database\Error;
 use SlaxWeb\Database\Exception\NoErrorException;
+use SlaxWeb\DatabasePDO\Exception\NoDataException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
 class Library implements \SlaxWeb\Database\Interfaces\Library
@@ -116,13 +118,23 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * Fetch Results
      *
      * It fetches the results from the last executed statement, creates the Result
-     * object and returns it.
+     * object and returns it. If an statement has not yet been executed or did not
+     * yield a valid result set, an exception is thrown.
      *
      * @return \SlaxWeb\DatabasePDO\Result
+     *
+     * @exceptions \SlaxWeb\DatabasePDO\Exception\NoDataException
      */
     public function fetch(): ResultInterface
     {
-        return new Result($this->_stmnt->fetchAll(PDO::FETCH_OBJ));
+        if (!($this->_stmnt instanceof PDOStatement)) {
+            throw new NoDataException("No statement has yet been executed. Unable to fetch data.");
+        }
+        if (is_array(($result = $this->_stmnt->fetchAll(PDO::FETCH_OBJ))) === false) {
+            throw new NoDataException("Statement did not yield a valid result set.");
+        }
+
+        return new Result($result);
     }
 
     /**
