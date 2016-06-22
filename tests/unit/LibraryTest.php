@@ -95,4 +95,103 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
         $lib->__construct($this->createMock("PDO"));
         $this->assertTrue($lib->insert($this->_testTable, $data));
     }
+
+    /**
+     * Test Premature Fetch
+     *
+     * Ensure that the fetch method throws the appropriate Exception if called without
+     * executing a statement before.
+     *
+     * @return \LibraryMock
+     */
+    public function testPrematureFetch(): \LibraryMock
+    {
+        $lib = $this->getMockBuilder(\SlaxWeb\DatabasePDO\Library::class)
+            ->disableOriginalConstructor()
+            ->setMethods(null)
+            ->setMockClassName("LibraryMock")
+            ->getMock();
+
+        try {
+            $lib->fetch();
+        } catch (\SlaxWeb\DatabasePDO\Exception\NoDataException $e) {
+            $expected = "No statement has yet been executed. Unable to fetch data.";
+            $eMsg = $e->getMessage();
+            $this->assertEquals(
+                $expected,
+                $eMsg,
+                "Raised exception does not yield expected message '{$expected}', actual: '{$eMsg}'"
+            );
+        }
+
+        return $lib;
+    }
+
+    /**
+     * Test Invalid Result Fetch
+     *
+     * Ensure that the 'fetch' method raises an exception when the statement does
+     * not yield a valid result set.
+     *
+     * @param \LibraryMock $lib Mocked Database Library objecct
+     * @return void
+     *
+     * @depends testPrematureFetch
+     */
+    public function testInvalidResultFetch(\LibraryMock $lib)
+    {
+        $pdo = $this->createMock("PDO");
+        $statement = $this->createMock("PDOStatement");
+        $statement->expects($this->once())
+            ->method("fetchAll")
+            ->willReturn(null);
+
+        $pdo->expects($this->once())
+            ->method("prepare")
+            ->willReturn($statement);
+
+        $lib->__construct($pdo);
+
+        $lib->execute("", []);
+        try {
+            $lib->fetch();
+        } catch (\SlaxWeb\DatabasePDO\Exception\NoDataException $e) {
+            $expected = "Statement did not yield a valid result set.";
+            $eMsg = $e->getMessage();
+            $this->assertEquals(
+                $expected,
+                $eMsg,
+                "Raised exception does not yield expected message '{$expected}', actual: '{$eMsg}'"
+            );
+        }
+    }
+
+    /**
+     * Test Fetch
+     *
+     * Ensure that the 'fetch' method will return a propper Result object when everything
+     * is ok with the fetching of data from the PDOStatement.
+     *
+     * @param \LibraryMock $lib Mocked Database Library objecct
+     * @return void
+     *
+     * @depends testPrematureFetch
+     */
+    public function testFetch(\LibraryMock $lib)
+    {
+        $pdo = $this->createMock("PDO");
+        $statement = $this->createMock("PDOStatement");
+        $statement->expects($this->once())
+            ->method("fetchAll")
+            ->willReturn([]);
+
+        $pdo->expects($this->once())
+            ->method("prepare")
+            ->willReturn($statement);
+
+        $lib->__construct($pdo);
+
+        $lib->execute("", []);
+        $this->assertInstanceOf(\SlaxWeb\DatabasePDO\Result::class, $lib->fetch());
+    }
 }
