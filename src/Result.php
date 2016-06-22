@@ -138,6 +138,18 @@ class Result implements ResultInterface
     }
 
     /**
+     * Get result set
+     *
+     * Returns the raw result set array to the caller.
+     *
+     * @return array
+     */
+    public function getResults(): array
+    {
+        return $this->_rawData;
+    }
+
+    /**
      * Get Row
      *
      * Returns the row object to the caller. If the row does not exists, an exception
