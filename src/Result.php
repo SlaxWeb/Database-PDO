@@ -14,6 +14,8 @@
  */
 namespace SlaxWeb\DatabasePDO;
 
+use Slaxweb\Database\Exception\RowNotFoundException;
+use Slaxweb\Database\Exception\ColumnNotFoundException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
 class Result implements ResultInterface
@@ -63,16 +65,16 @@ class Result implements ResultInterface
      * @param string $name Name of the column
      * @return mixed
      *
-     * @exceptions \SlaxWeb\Database\Exception\ResultRowNotFoundException
+     * @exceptions \SlaxWeb\Database\Exception\RowNotFoundException
      *             \SlaxWeb\Database\Exception\ColumnNotFoundException
      */
     public function __get(string $name)
     {
         if (isset($this->_rawData[$this->_currRow]) === false) {
-            // @todo: throw exception
+            throw new RowNotFoundException("The requested row does not exist in the current result set.");
         }
         if (isset($this->_rawData[$this->_currRow]->{$name}) === false) {
-            // @todo: throw exception
+            throw new ColumnNotFoundException("The requested column does not exist in the current result set.");
         }
         return $this->_rawData[$this->_currRow]->{$name};
     }
@@ -156,12 +158,12 @@ class Result implements ResultInterface
      *
      * @return \stdClass
      *
-     * @exceptions \SlaxWeb\Database\Exception\ResultRowNotFoundException
+     * @exceptions \SlaxWeb\Database\Exception\RowNotFoundException
      */
     public function get(): \stdClass
     {
         if (isset($this->_rawData[$this->_currRow]) === false) {
-            // @todo: throw exception
+            throw new RowNotFoundException("The requested row does not exist in the current result set.");
         }
 
         return $this->_rawData[$this->_currRow];
