@@ -3,8 +3,7 @@
  * Database Result Class
  *
  * The result class holds the result of an executed statement, which is easy to
- * navigate and retrieve data from. It also provides functionality to easily update
- * the programatically changed data in a result set.
+ * navigate and retrieve data from.
  *
  * @package   SlaxWeb\DatabasePDO
  * @author    Tomaz Lovrec <tomaz.lovrec@gmail.com>
