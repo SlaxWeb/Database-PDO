@@ -13,6 +13,9 @@
  */
 namespace SlaxWeb\DatabasePDO\Test\Unit;
 
+use SlaxWeb\DatabasePDO\Result;
+use SlaxWeb\DatabasePDO\Library;
+
 class LibraryTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -56,7 +59,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->with($testQuery)
             ->willReturn($statement);
 
-        $lib = $this->getMockBuilder(\SlaxWeb\DatabasePDO\Library::class)
+        $lib = $this->getMockBuilder(Library::class)
             ->disableOriginalConstructor()
             ->setMethods(null)
             ->getMock();
@@ -82,7 +85,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
 
-        $lib = $this->getMockBuilder(\SlaxWeb\DatabasePDO\Library::class)
+        $lib = $this->getMockBuilder(Library::class)
             ->disableOriginalConstructor()
             ->setMethods(["execute"])
             ->getMock();
@@ -106,7 +109,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
      */
     public function testPrematureFetch(): \LibraryMock
     {
-        $lib = $this->getMockBuilder(\SlaxWeb\DatabasePDO\Library::class)
+        $lib = $this->getMockBuilder(Library::class)
             ->disableOriginalConstructor()
             ->setMethods(null)
             ->setMockClassName("LibraryMock")
@@ -192,6 +195,6 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
         $lib->__construct($pdo);
 
         $lib->execute("", []);
-        $this->assertInstanceOf(\SlaxWeb\DatabasePDO\Result::class, $lib->fetch());
+        $this->assertInstanceOf(Result::class, $lib->fetch());
     }
 }
