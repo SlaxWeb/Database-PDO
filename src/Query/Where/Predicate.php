@@ -12,7 +12,7 @@
  * @link      https://github.com/slaxweb/
  * @version   0.4
  */
-namespace SlaxWeb\DatabasePDO\Where;
+namespace SlaxWeb\DatabasePDO\Query\Where;
 
 class Predicate
 {

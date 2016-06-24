@@ -17,7 +17,9 @@ namespace SlaxWeb\DatabasePDO;
 use PDO;
 use PDOStatement;
 use SlaxWeb\Database\Error;
+use SlaxWeb\DatabasePDO\Query\Builder;
 use SlaxWeb\Database\Exception\NoErrorException;
+use SlaxWeb\DatabasePDO\Exception\QueryException;
 use SlaxWeb\DatabasePDO\Exception\NoDataException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
@@ -40,6 +42,13 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     protected $_pdo = null;
 
     /**
+     * Query Builder
+     *
+     * @var \SlaxWeb\DatabasePDO\Query\Builder
+     */
+    protected $_qBuilder = null;
+
+    /**
      * Last Executed Statement
      *
      * @var \PDOStatement
@@ -60,11 +69,14 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * later use.
      *
      * @param \PDO $pdo PDO instance
+     * @param \SlaxWeb\DatabasePDO\Query\Builder $queryBuilder Query Builder instance
      * @return void
      */
-    public function __construct(PDO $pdo)
+    public function __construct(PDO $pdo, Builder $queryBuilder)
     {
         $this->_pdo = $pdo;
+        $this->_qBuilder = $queryBuilder;
+        $this->_qBuilder->setDelim($this->_delim);
     }
 
     /**
@@ -76,10 +88,10 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * a result set, a Result object will be populated.
      *
      * @param string $query The Query to be executed
-     * @param array $data Data to be bound into the Query
+     * @param array $data Data to be bound into the Query, default []
      * @return bool
      */
-    public function execute(string $query, array $data): bool
+    public function execute(string $query, array $data = []): bool
     {
         if (($this->_stmnt = $this->_pdo->prepare($query)) === false) {
             $this->_error = new Error($this->_pdo->errorInfo()[2]);
@@ -112,6 +124,34 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
             . rtrim(str_repeat("?,", count($data)), ",")
             . ");";
         return $this->execute($query, $data);
+    }
+
+    /**
+     * Select query
+     *
+     * Run a select query against the database and return the result set if it was
+     * successful. Throw an exception on error. The input array defines a list of
+     * columns that need to get selected from the database. If a SQL function should
+     * be executed on a column, like i.e., MAX, then the key of that value should
+     * be the name of that function. If the key is numeric, the column is used normally
+     * in the query.
+     *
+     * @param string $table Table on which the select statement is to be executed
+     * @param array $cols Array of columns for the SELECT statement
+     * @return \SlaxWeb\DatabasePDO\Result
+     *
+     * @exceptions \SlaxWeb\DatabasePDO\Exception\QueryException
+     *             \SlaxWeb\DatabasePDO\Exception\NoDataException
+     */
+    public function select(string $table, array $cols): ResultInterface
+    {
+        $query = $this->_qBuilder
+            ->table($table)
+            ->select($cols);
+        if ($this->execute($query, $this->_qBuilder->getParams()) === false) {
+            throw new QueryException("Query execution resulted in an error");
+        }
+        return $this->fetch();
     }
 
     /**

@@ -15,6 +15,8 @@ namespace SlaxWeb\DatabasePDO\Test\Unit;
 
 use SlaxWeb\DatabasePDO\Result;
 use SlaxWeb\DatabasePDO\Library;
+use SlaxWeb\DatabasePDO\Exception\QueryException;
+use SlaxWeb\DatabasePDO\Query\Builder as QueryBuilder;
 
 class LibraryTest extends \PHPUnit_Framework_TestCase
 {
@@ -64,7 +66,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->setMethods(null)
             ->getMock();
 
-        $lib->__construct($pdo);
+        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
 
         $this->assertTrue($lib->execute($testQuery, $data));
     }
@@ -95,7 +97,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->with($testQuery, $data)
             ->willReturn(true);
 
-        $lib->__construct($this->createMock("PDO"));
+        $lib->__construct($this->createMock("PDO"), $this->createMock(QueryBuilder::class));
         $this->assertTrue($lib->insert($this->_testTable, $data));
     }
 
@@ -153,7 +155,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->method("prepare")
             ->willReturn($statement);
 
-        $lib->__construct($pdo);
+        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
 
         $lib->execute("", []);
         try {
@@ -192,9 +194,67 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->method("prepare")
             ->willReturn($statement);
 
-        $lib->__construct($pdo);
+        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
 
         $lib->execute("", []);
         $this->assertInstanceOf(Result::class, $lib->fetch());
+    }
+
+    /**
+     * Test Select
+     *
+     * Ensure that the 'select' method will call the execute method with propper
+     * data that it retrieves from the query builder.
+     *
+     * @return void
+     */
+    public function testSelect()
+    {
+        $cols = ["foo", "bar"];
+        $table = "baz";
+
+        $pdo = $this->createMock("PDO");
+        $qBuilder = $this->createMock(QueryBuilder::class);
+
+        $qBuilder->expects($this->exactly(2))
+            ->method("table")
+            ->with($table)
+            ->willReturn($qBuilder);
+
+        $qBuilder->expects($this->exactly(2))
+            ->method("select")
+            ->with($cols)
+            ->willReturn("TEST QUERY");
+
+        $qBuilder->expects($this->exactly(2))
+            ->method("getParams")
+            ->willReturn([]);
+
+        $lib = $this->getMockBuilder(Library::class)
+            ->disableOriginalConstructor()
+            ->setMethods(["execute", "fetch"])
+            ->getMock();
+
+        $lib->expects($this->exactly(2))
+            ->method("execute")
+            ->with("TEST QUERY", [])
+            ->will($this->onConsecutiveCalls(true, false));
+
+        $lib->expects($this->once())
+            ->method("fetch")
+            ->willReturn($this->createMock(Result::class));
+
+        $lib->__construct($pdo, $qBuilder);
+
+        $this->assertInstanceOf(Result::class, $lib->select($table, $cols));
+
+        try {
+            $lib->select($table, $cols);
+        } catch (QueryException $e) {
+            $this->assertEquals("Query execution resulted in an error", $e->getMessage());
+            $thrown = true;
+        } finally {
+            $this->assertTrue($thrown);
+        }
     }
 }
