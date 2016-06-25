@@ -19,8 +19,8 @@ use PDOStatement;
 use SlaxWeb\Database\Error;
 use SlaxWeb\DatabasePDO\Query\Builder;
 use SlaxWeb\Database\Exception\NoErrorException;
-use SlaxWeb\DatabasePDO\Exception\QueryException;
-use SlaxWeb\DatabasePDO\Exception\NoDataException;
+use SlaxWeb\Database\Exception\QueryException;
+use SlaxWeb\Database\Exception\NoDataException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
 class Library implements \SlaxWeb\Database\Interfaces\Library
@@ -140,8 +140,8 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * @param array $cols Array of columns for the SELECT statement
      * @return \SlaxWeb\DatabasePDO\Result
      *
-     * @exceptions \SlaxWeb\DatabasePDO\Exception\QueryException
-     *             \SlaxWeb\DatabasePDO\Exception\NoDataException
+     * @exceptions \SlaxWeb\Database\Exception\QueryException
+     *             \SlaxWeb\Database\Exception\NoDataException
      */
     public function select(string $table, array $cols): ResultInterface
     {
@@ -163,7 +163,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * @return \SlaxWeb\DatabasePDO\Result
      *
-     * @exceptions \SlaxWeb\DatabasePDO\Exception\NoDataException
+     * @exceptions \SlaxWeb\Database\Exception\NoDataException
      */
     public function fetch(): ResultInterface
     {

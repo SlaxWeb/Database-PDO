@@ -15,7 +15,7 @@ namespace SlaxWeb\DatabasePDO\Test\Unit;
 
 use SlaxWeb\DatabasePDO\Result;
 use SlaxWeb\DatabasePDO\Library;
-use SlaxWeb\DatabasePDO\Exception\QueryException;
+use SlaxWeb\Database\Exception\QueryException;
 use SlaxWeb\DatabasePDO\Query\Builder as QueryBuilder;
 
 class LibraryTest extends \PHPUnit_Framework_TestCase
@@ -119,7 +119,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
 
         try {
             $lib->fetch();
-        } catch (\SlaxWeb\DatabasePDO\Exception\NoDataException $e) {
+        } catch (\SlaxWeb\Database\Exception\NoDataException $e) {
             $expected = "No statement has yet been executed. Unable to fetch data.";
             $eMsg = $e->getMessage();
             $this->assertEquals(
@@ -160,7 +160,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
         $lib->execute("", []);
         try {
             $lib->fetch();
-        } catch (\SlaxWeb\DatabasePDO\Exception\NoDataException $e) {
+        } catch (\SlaxWeb\Database\Exception\NoDataException $e) {
             $expected = "Statement did not yield a valid result set.";
             $eMsg = $e->getMessage();
             $this->assertEquals(
