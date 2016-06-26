@@ -24,7 +24,7 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
      *
      * @var \SlaxWeb\DatabasePDO\Query\Where\Predicate
      */
-    protected $_predicate;
+    protected $_predicate = null;
 
     protected function setUp()
     {
@@ -50,22 +50,30 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
     {
         $this->_predicate->setValue(1);
         $this->_predicate->setOperator(Predicate::OPR_EQUAL);
-        $this->assertEquals("\"foo\".\"bar\" = 1", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert());
+        $this->assertEquals([1], $this->_predicate->getParams());
 
+        $this->setUp();
         $this->_predicate->setValue("foo");
         $this->_predicate->setOperator(Predicate::OPR_EQUAL);
-        $this->assertEquals("\"foo\".\"bar\" = 'foo'", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert());
+        $this->assertEquals(["foo"], $this->_predicate->getParams());
 
+        $this->setUp();
         $this->_predicate->setValue(null);
-        $this->_predicate->setOperator(Predicate::OPR_NULL);
         $this->assertEquals("\"foo\".\"bar\" IS NULL", $this->_predicate->convert());
+        $this->assertEquals([], $this->_predicate->getParams());
 
+        $this->setUp();
         $this->_predicate->setValue([1, 100]);
         $this->_predicate->setOperator(Predicate::OPR_BTWN);
-        $this->assertEquals("\"foo\".\"bar\" BETWEEN 1 AND 100", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" BETWEEN ? AND ?", $this->_predicate->convert());
+        $this->assertEquals([1, 100], $this->_predicate->getParams());
 
+        $this->setUp();
         $this->_predicate->setValue([1, 2, 3, 4]);
         $this->_predicate->setOperator(Predicate::OPR_IN);
-        $this->assertEquals("\"foo\".\"bar\" IN (1,2,3,4)", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" IN (?,?,?,?)", $this->_predicate->convert());
+        $this->assertEquals([1, 2, 3, 4], $this->_predicate->getParams());
     }
 }

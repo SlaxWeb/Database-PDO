@@ -54,6 +54,13 @@ class Predicate
     protected $_opr = self::OPR_EQUAL;
 
     /**
+     * Parameters
+     *
+     * @var array
+     */
+    protected $_params = [];
+
+    /**
      * Convert to string
      *
      * Convert the Predicate to string. It checks that the value and the comparison
@@ -78,7 +85,7 @@ class Predicate
                 if (is_array($this->_val) === false || count($this->_val) !== 2) {
                     // @todo: throw exception
                 }
-                $predicate .= $this->_prepArray($this->_val, " AND ");
+                $predicate .= implode(" AND ", $this->_val);
                 break;
 
             case self::OPR_IN:
@@ -87,11 +94,11 @@ class Predicate
                 if (is_array($this->_val) === false) {
                     // @todo: throw exception
                 }
-                $predicate .= "(" . $this->_prepArray($this->_val) . ")";
+                $predicate .= "(" . implode(",", $this->_val) . ")";
                 break;
 
             default:
-                $predicate .= is_string($this->_val) ? "'{$this->_val}'" : $this->_val;
+                $predicate .= $this->_val;
         }
 
         return $predicate;
@@ -125,8 +132,9 @@ class Predicate
     {
         if ($value === null || (is_string($value) && strtolower($value) === "null")) {
             $this->setOperator(self::OPR_NULL);
+            return $this;
         }
-        $this->_val = $value;
+        $this->_val = $this->_prepValues($value);
         return $this;
     }
 
@@ -146,20 +154,40 @@ class Predicate
     }
 
     /**
-     * Prepare array
+     * Get parameters
      *
-     * Prepares the array by wrapping strings in single quotes, and implodes the
-     * values with the delimiter that is passed in.
+     * Returns the list of parameters for this predicate.
      *
-     * @param array $values Array of values that need to be prepared and imploded
-     * @param string $delim Array pieces delimiter, default string(",")
-     * @return string
+     * @return array
      */
-    protected function _prepArray(array $values, string $delim = ","): string
+    public function getParams(): array
     {
-        array_walk($values, function(&$value) {
-            $value = is_string($value) ? "'{$value}'" : $value;
-        });
-        return implode($delim, $values);
+        return $this->_params;
+    }
+
+    /**
+     * Prepare values
+     *
+     * Prepare the values by replacing the actual value with the question mark placeholder
+     * and add the value to the '_params' array.
+     *
+     * @param mixed $value Value to be prepared
+     * @return mixed
+     */
+    public function _prepValues($value)
+    {
+        if (is_array($value)) {
+            foreach ($value as &$param) {
+                $this->_params[] = $param;
+                $param = "?";
+            }
+            unset($param);
+            return $value;
+        }
+        if (in_array(is_string($value) ? strtolower($value) : $value, [null, "null"]) === false) {
+            $this->_params[] = $value;
+            $value = "?";
+        }
+        return $value;
     }
 }
