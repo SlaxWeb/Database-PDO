@@ -87,7 +87,7 @@ class Predicate
                 if (is_array($this->_val) === false) {
                     // @todo: throw exception
                 }
-                $predicate .= $this->_prepArray($this->_val);
+                $predicate .= "(" . $this->_prepArray($this->_val) . ")";
                 break;
 
             default:
@@ -123,7 +123,7 @@ class Predicate
      */
     public function setValue($value): self
     {
-        if ($value === null || strtolower($value) === "null") {
+        if ($value === null || (is_string($value) && strtolower($value) === "null")) {
             $this->setOperator(self::OPR_NULL);
         }
         $this->_val = $value;

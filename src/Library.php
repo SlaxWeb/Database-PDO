@@ -18,9 +18,10 @@ use PDO;
 use PDOStatement;
 use SlaxWeb\Database\Error;
 use SlaxWeb\DatabasePDO\Query\Builder;
-use SlaxWeb\Database\Exception\NoErrorException;
+use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 use SlaxWeb\Database\Exception\QueryException;
 use SlaxWeb\Database\Exception\NoDataException;
+use SlaxWeb\Database\Exception\NoErrorException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
 class Library implements \SlaxWeb\Database\Interfaces\Library

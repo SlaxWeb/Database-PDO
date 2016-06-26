@@ -14,6 +14,8 @@
  */
 namespace SlaxWeb\DatabasePDO\Query;
 
+use SlaxWeb\DatabasePDO\Query\Where\Predicate;
+
 class Builder
 {
     /**
