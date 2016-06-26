@@ -96,7 +96,8 @@ class Builder
     {
         $query = "SELECT ";
         foreach ($cols as $key => $name) {
-            $name = $this->_delim . $name . $name;
+            // create "table"."column"
+            $name = $this->_delim . $this->_table . $this->_delim . "." . $this->_delim . $name . $this->_delim;
             if (is_string($key)) {
                 $query .= "{$key}({$name}),";
             } else {
