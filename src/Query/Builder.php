@@ -38,6 +38,13 @@ class Builder
     protected $_delim = "";
 
     /**
+     * Where Predicate Group object
+     *
+     * @var \SlaxWeb\DatabasePDO\Query\Where\Group
+     */
+    protected $_predicates = null;
+
+    /**
      * Set DB Object Delimiter
      *
      * Sets the Database Object Delimiter character that will be used for creating
@@ -104,8 +111,28 @@ class Builder
                 $query .= "{$name},";
             }
         }
-        $query .= " FROM {$this->_table}";
+        $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
 
         return $query;
+    }
+
+    /**
+     * Add Where Predicate
+     *
+     * Adds a SQL DML WHERE predicate to the group of predicates. If the group does
+     * not yet exist it will create one.
+     *
+     * @param string $column Column name
+     * @param mixed $value Value of the predicate
+     * @param string $lOpr Logical operator, default Predicate::OPR_EQUAL
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return void
+     */
+    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
+    {
+        if ($this->_predicates === null) {
+            $this->_predicates = new Where\Group;
+        }
+        $this->_predicates->where($column, $value, $lOpr, $cOpr);
     }
 }
