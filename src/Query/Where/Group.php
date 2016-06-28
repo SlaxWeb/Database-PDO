@@ -17,7 +17,7 @@ namespace SlaxWeb\DatabasePDO\Query\Where;
 class Group
 {
     /**
-     * Predicament list
+     * Predicate list
      *
      * @var array
      */
@@ -29,6 +29,13 @@ class Group
      * @var string
      */
     protected $_opr = "";
+
+    /**
+     * Parameter list
+     *
+     * @var array
+     */
+    protected $_params = [];
 
     /**
      * Class constructor
@@ -63,8 +70,21 @@ class Group
         $where .= $first["predicate"]->convert();
         foreach ($this->_list as $predicate) {
             $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert();
+            $this->_params = array_merge($this->_params, $predicate["predicate"]->getParams());
         }
         return "{$where})";
+    }
+
+    /**
+     * Get parameters
+     *
+     * Returns the list of parameters for this predicate.
+     *
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->_params;
     }
 
     /**

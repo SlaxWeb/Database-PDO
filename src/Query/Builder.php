@@ -114,6 +114,7 @@ class Builder
             }
         }
         $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
+        $this->_params = $this->_predicates->getParams();
 
         return $query;
     }
