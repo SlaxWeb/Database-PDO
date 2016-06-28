@@ -79,7 +79,7 @@ class Group
      * @param string $cOpr Comparisson operator, default string("AND")
      * @return void
      */
-    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL string $cOpr = "AND")
+    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
     {
         $this->_list[$cOpr] = (new Predicate)
             ->setColumn($column)
