@@ -13,7 +13,7 @@
  * @link      https://github.com/slaxweb/
  * @version   0.4
  */
-namespace SlaxWeb\DatabasePDO\Tests\Unit;
+namespace SlaxWeb\DatabasePDO\Test\Unit;
 
 use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 

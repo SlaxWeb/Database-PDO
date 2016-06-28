@@ -60,9 +60,9 @@ class Group
 
         $where = " {$this->_opr} (";
         $first = array_shift($this->_list);
-        $where .= $first->convert();
-        foreach ($this->_list as $opr => $predicate) {
-            $where .= " {$opr} " . $predicate->convert();
+        $where .= $first["predicate"]->convert();
+        foreach ($this->_list as $predicate) {
+            $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert();
         }
         return "{$where})";
     }
@@ -81,9 +81,12 @@ class Group
      */
     public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
     {
-        $this->_list[$cOpr] = (new Predicate)
-            ->setColumn($column)
-            ->setValue($value)
-            ->setOperator($lOpr);
+        $this->_list[] = [
+            "opr"       =>  $cOpr,
+            "predicate" =>  (new Predicate)
+                ->setColumn($column)
+                ->setValue($value)
+                ->setOperator($lOpr)
+        ];
     }
 }
