@@ -90,11 +90,11 @@ class Predicate
 
             case self::OPR_IN:
             case self::OPR_NOTIN:
-                // @todo: extend to allow another model to be the value(maybe a query as well?)
-                if (is_array($this->_val) === false) {
-                    // @todo: throw exception
+                if (is_string($this->_val)) {
+                    $predicate .= " ({$this->_val})";
+                    break;
                 }
-                $predicate .= "(" . implode(",", $this->_val) . ")";
+                $predicate .= " (" . implode(",", $this->_val) . ")";
                 break;
 
             default:
@@ -126,15 +126,20 @@ class Predicate
      * operator to self::OPR_NULL.
      *
      * @param mixed $value Value of the predicate
+     * @param bool $prep Prepare value, default bool(true)
+     * @param array $params Predefined parameters, default []
      * @return self
      */
-    public function setValue($value): self
+    public function setValue($value, bool $prep = true, array $params = []): self
     {
         if ($value === null || (is_string($value) && strtolower($value) === "null")) {
             $this->setOperator(self::OPR_NULL);
             return $this;
         }
-        $this->_val = $this->_prepValues($value);
+        $this->_val = $prep ? $this->_prepValues($value) : $value;
+        if ($params !== []) {
+            $this->_params = $params;
+        }
         return $this;
     }
 

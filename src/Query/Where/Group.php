@@ -14,6 +14,8 @@
  */
 namespace SlaxWeb\DatabasePDO\Query\Where;
 
+use SlaxWeb\DatabasePDO\Query\Builder;
+
 class Group
 {
     /**
@@ -38,6 +40,13 @@ class Group
     protected $_params = [];
 
     /**
+     * SQL Object Delimiter
+     *
+     * @var string
+     */
+    protected $_delim = "";
+
+    /**
      * Class constructor
      *
      * Sets the logical operator that will be used to link this Predicate Group
@@ -49,6 +58,21 @@ class Group
     public function __construct(string $opr = "AND")
     {
         $this->_opr = $opr;
+    }
+    /**
+     * Set DB Object Delimiter
+     *
+     * Sets the Database Object Delimiter character that will be used for
+     * creating
+     * the query.
+     *
+     * @param string $delim Delimiter character
+     * @return self
+     */
+    public function setDelim(string $delim): self
+    {
+        $this->_delim = $delim;
+        return $this;
     }
 
     /**
@@ -105,7 +129,7 @@ class Group
         $this->_list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($column)
+                ->setColumn($this->_delim . $column . $this->_delim)
                 ->setValue($value)
                 ->setOperator($lOpr)
         ];
@@ -139,7 +163,7 @@ class Group
      */
     public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
     {
-        $group = new Group($cOpr);
+        $group = (new Group($cOpr))->setDelim($this->_delim);
         $predicates($group);
         $this->_list[] = [
             "opr"       =>  "",
@@ -159,5 +183,51 @@ class Group
     public function orGroupWhere(\Closure $predicates): self
     {
         return $this->groupWhere($predicates, "OR");
+    }
+
+    /**
+     * Where Nested Select
+     *
+     * Add a nested select as a value to the where predicate.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @param string $cOpr Comparisson operator, default string("AND")
+     */
+    public function nestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN,
+        string $cOpr = "AND"
+    ): self {
+        $builder = (new Builder)->setDelim($this->_delim);
+        $this->_list[] = [
+            "opr"       =>  $cOpr,
+            "predicate" =>  (new Predicate)
+                ->setColumn($this->_delim . $column . $this->_delim)
+                ->setValue($nested($builder), false, $builder->getParams())
+                ->setOperator($lOpr)
+        ];
+        return $this;
+    }
+
+    /**
+     * Or Where Nested Select
+     *
+     * Alias for 'nestedWhere' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @return self
+     */
+    public function orNestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN
+    ): self {
+        $this->nestedWhere($column, $nested, $lOpr, "OR");
+        return $this;
     }
 }

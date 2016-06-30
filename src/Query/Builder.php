@@ -14,6 +14,7 @@
  */
 namespace SlaxWeb\DatabasePDO\Query;
 
+use SlaxWeb\DatabasePDO\Query\Where\Group;
 use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 
 class Builder
@@ -55,7 +56,7 @@ class Builder
      */
     public function __construct()
     {
-        $this->_predicates = new Where\Group;
+        $this->_predicates = new Group;
     }
 
     /**
@@ -70,6 +71,7 @@ class Builder
     public function setDelim(string $delim): self
     {
         $this->_delim = $delim;
+        $this->_predicates->setDelim($delim);
         return $this;
     }
 
@@ -125,6 +127,7 @@ class Builder
                 $query .= "{$name},";
             }
         }
+        $query = rtrim($query, ",");
         $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
         $this->_params = $this->_predicates->getParams();
 
@@ -191,5 +194,45 @@ class Builder
     public function orGroupWhere(\Closure $predicates): self
     {
         return $this->groupWhere($predicates, "OR");
+    }
+
+    /**
+     * Where Nested Select
+     *
+     * Add a nested select as a value to the where predicate.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return self
+     */
+    public function nestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN,
+        string $cOpr = "AND"
+    ): self {
+        $this->_predicates->nestedWhere($column, $nested, $lOpr, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where Nested Select
+     *
+     * Alias for 'nestedWhere' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @return self
+     */
+    public function orNestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN
+    ): self {
+        $this->_predicates->nestedWhere($column, $nested, $lOpr, "OR");
+        return $this;
     }
 }
