@@ -47,6 +47,18 @@ class Builder
     protected $_predicates = null;
 
     /**
+     * Class constructor
+     *
+     * Prepare the predictes list by instantiating the first predicate group object.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->_predicates = new Where\Group;
+    }
+
+    /**
      * Set DB Object Delimiter
      *
      * Sets the Database Object Delimiter character that will be used for creating
@@ -106,7 +118,7 @@ class Builder
         $query = "SELECT ";
         foreach ($cols as $key => $name) {
             // create "table"."column"
-            $name = $this->_delim . $this->_table . $this->_delim . "." . $this->_delim . $name . $this->_delim;
+            $name = $this->_table . "." . $this->_delim . $name . $this->_delim;
             if (is_string($key)) {
                 $query .= "{$key}({$name}),";
             } else {
@@ -114,6 +126,7 @@ class Builder
             }
         }
         $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
+        $this->_params = $this->_predicates->getParams();
 
         return $query;
     }
@@ -128,13 +141,55 @@ class Builder
      * @param mixed $value Value of the predicate
      * @param string $lOpr Logical operator, default Predicate::OPR_EQUAL
      * @param string $cOpr Comparisson operator, default string("AND")
-     * @return void
+     * @return self
      */
-    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
+    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND"): self
     {
-        if ($this->_predicates === null) {
-            $this->_predicates = new Where\Group;
-        }
         $this->_predicates->where($column, $value, $lOpr, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where predicate
+     *
+     * Alias for 'where' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param mixed $value Value of the predicate
+     * @param string $opr Logical operator
+     * @return self
+     */
+    public function orWhere(string $column, $value, string $opr = Predicate::OPR_EQUAL): self
+    {
+        return $this->where($column, $value, $opr, "OR");
+    }
+
+    /**
+     * Add Where Predicate Group
+     *
+     * Adds a group of predicates to the list. The closure received as input must
+     * receive the builder instance for building groups.
+     *
+     * @param closure $predicates Grouped predicates definition closure
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return self
+     */
+    public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
+    {
+        $this->_predicates->groupWhere($predicates, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where Predicate Group
+     *
+     * Alias for 'whereGroup' method call with OR logical operator.
+     *
+     * @param closure $predicates Grouped predicates definition closure
+     * @return self
+     */
+    public function orGroupWhere(\Closure $predicates): self
+    {
+        return $this->groupWhere($predicates, "OR");
     }
 }

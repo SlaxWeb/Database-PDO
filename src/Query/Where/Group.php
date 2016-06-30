@@ -31,6 +31,13 @@ class Group
     protected $_opr = "";
 
     /**
+     * Parameters
+     *
+     * @var array
+     */
+    protected $_params = [];
+
+    /**
      * Class constructor
      *
      * Sets the logical operator that will be used to link this Predicate Group
@@ -61,10 +68,24 @@ class Group
         $where = " {$this->_opr} (";
         $first = array_shift($this->_list);
         $where .= $first["predicate"]->convert();
+        $this->_params = array_merge($this->_params, $first["predicate"]->getParams());
         foreach ($this->_list as $predicate) {
             $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert();
+            $this->_params = array_merge($this->_params, $predicate["predicate"]->getParams());
         }
         return "{$where})";
+    }
+
+    /**
+     * Get parameters
+     *
+     * Returns the list of parameters for this predicate.
+     *
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->_params;
     }
 
     /**
@@ -77,9 +98,9 @@ class Group
      * @param mixed $value Value for the predicate
      * @param stirng $lOpr Logical operator, default Predicate::OPR_EQUAL
      * @param string $cOpr Comparisson operator, default string("AND")
-     * @return void
+     * @return self
      */
-    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
+    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND"): self
     {
         $this->_list[] = [
             "opr"       =>  $cOpr,
@@ -88,5 +109,55 @@ class Group
                 ->setValue($value)
                 ->setOperator($lOpr)
         ];
+        return $this;
+    }
+
+    /**
+     * Or Where predicate
+     *
+     * Alias for 'where' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param mixed $value Value of the predicate
+     * @param string $opr Logical operator
+     * @return self
+     */
+    public function orWhere(string $column, $value, string $opr = Predicate::OPR_EQUAL): self
+    {
+        return $this->where($column, $value, $opr, "OR");
+    }
+
+    /**
+     * Add Where Predicate Group
+     *
+     * Adds a group of predicates to the list. The closure received as input must
+     * receive the builder instance for building groups.
+     *
+     * @param Closure $predicates Grouped predicates definition closure
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return self
+     */
+    public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
+    {
+        $group = new Group($cOpr);
+        $predicates($group);
+        $this->_list[] = [
+            "opr"       =>  "",
+            "predicate" =>  $group
+        ];
+        return $this;
+    }
+
+    /**
+     * Or Where Predicate Group
+     *
+     * Alias for 'whereGroup' method call with OR logical operator.
+     *
+     * @param closure $predicates Grouped predicates definition closure
+     * @return self
+     */
+    public function orGroupWhere(\Closure $predicates): self
+    {
+        return $this->groupWhere($predicates, "OR");
     }
 }

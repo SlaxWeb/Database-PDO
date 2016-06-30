@@ -195,6 +195,21 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Add Where Predicate Group
+     *
+     * Adds a group of predicates to the list. The closure received as input must
+     * receive the builder instance for building groups.
+     *
+     * @param Closure $predicates Grouped predicates definition closure
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return void
+     */
+    public function groupWhere(\Closure $predicates, string $cOpr = "AND")
+    {
+        $this->_qBuilder->groupWhere($predicates, $cOpr);
+    }
+
+    /**
      * Get last error
      *
      * Retrieves the error of the last executed query. If there was no error, an
