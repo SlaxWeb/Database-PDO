@@ -91,10 +91,10 @@ class Predicate
             case self::OPR_IN:
             case self::OPR_NOTIN:
                 if (is_string($this->_val)) {
-                    $predicate .= " ({$this->_val})";
+                    $predicate .= "({$this->_val})";
                     break;
                 }
-                $predicate .= " (" . implode(",", $this->_val) . ")";
+                $predicate .= "(" . implode(",", $this->_val) . ")";
                 break;
 
             default:
