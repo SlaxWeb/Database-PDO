@@ -40,6 +40,23 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test insert
+     *
+     * Ensure the builder creates a proper INSERT SQL DML statement, and properly 
+     * populates the parameters array.
+     *
+     * @return void
+     */
+    public function testInsert()
+    {
+        $this->assertEquals(
+            "INSERT INTO \"foos\" (\"foo\",\"bar\") VALUES (?,?)",
+            $this->_builder->insert(["foo" => "baz", "bar" => "qux"])
+        );
+        $this->assertEquals(["baz", "qux"], $this->_builder->getParams());
+    }
+
+    /**
      * Test select
      *
      * Ensure that a normal select statement is built with the column list provided.

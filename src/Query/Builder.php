@@ -136,7 +136,7 @@ class Builder
             . implode("{$this->_delim},{$this->_delim}", array_keys($data))
             . "{$this->_delim}) VALUES ("
             . rtrim(str_repeat("?,", count($data)), ",")
-            . ");";
+            . ")";
     }
 
     /**
