@@ -82,18 +82,21 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
             $this->_builder->where("bar", "baz")->select(["foo"])
         );
+        $this->assertEquals(["baz"], $this->_builder->getParams());
 
         $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? OR \"foos\".\"bar\" = ?)",
             $this->_builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
         );
+        $this->assertEquals(["baz", "qux"], $this->_builder->getParams());
 
         $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" <> ?)",
             $this->_builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
         );
+        $this->assertEquals(["baz"], $this->_builder->getParams());
     }
 
     /**
@@ -112,10 +115,11 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->_builder
                 ->where("bar", "baz")
                 ->groupWhere(function ($builder) {
-                    $builder->where("bar", "10", Predicate::OPR_LESS)
-                        ->orWhere("baz", "1", Predicate::OPR_GRTR);
+                    $builder->where("bar", 10, Predicate::OPR_LESS)
+                        ->orWhere("baz", 1, Predicate::OPR_GRTR);
                 })->select(["foo"])
         );
+        $this->assertEquals(["baz", 10, 1], $this->_builder->getParams());
 
         $this->_builder->reset();
         $this->assertEquals(
@@ -128,6 +132,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                         ->orWhere("baz", "1", Predicate::OPR_GRTR);
                 })->select(["foo"])
         );
+        $this->assertEquals(["baz", 10, 1], $this->_builder->getParams());
     }
 
     /**
@@ -149,6 +154,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                         ->select(["bar"]);
                 })->select(["foo"])
         );
+        $this->assertEquals(["baz"], $this->_builder->getParams());
 
         $this->_builder->reset();
         $this->assertEquals(
@@ -161,5 +167,6 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                         ->select(["bar"]);
                 })->select(["foo"])
         );
+        $this->assertEquals(["baz"], $this->_builder->getParams());
     }
 }
