@@ -118,12 +118,17 @@ class Builder
     public function select(array $cols): string
     {
         $query = "SELECT ";
-        foreach ($cols as $key => $name) {
+        foreach ($cols as $name) {
             // create "table"."column"
-            $name = $this->_table . "." . $this->_delim . $name . $this->_delim;
-            if (is_string($key)) {
-                $query .= "{$key}({$name}),";
+            if (is_array($name)) {
+                $query .= strtoupper($name["func"] ?? "");
+                $col = $this->_table . "." . $this->_delim . $name["col"] . $this->_delim;
+                $query .= "({$col})";
+                if (isset($name["as"])) {
+                    $query .= " AS {$name["as"]},";
+                }
             } else {
+                $name = $this->_table . "." . $this->_delim . $name . $this->_delim;
                 $query .= "{$name},";
             }
         }

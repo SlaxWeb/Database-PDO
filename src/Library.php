@@ -132,10 +132,11 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * Run a select query against the database and return the result set if it was
      * successful. Throw an exception on error. The input array defines a list of
-     * columns that need to get selected from the database. If a SQL function should
-     * be executed on a column, like i.e., MAX, then the key of that value should
-     * be the name of that function. If the key is numeric, the column is used normally
-     * in the query.
+     * columns that need to get selected from the database. If the array item is
+     * another array, it needs to hold the "func" and "col" keys at least, defining
+     * the SQL DML function, as well as the column name. A third item with the key
+     * name "as" can be added, and this name will be used in the "AS" statement
+     * in the SQL DML for that column.
      *
      * @param string $table Table on which the select statement is to be executed
      * @param array $cols Array of columns for the SELECT statement
