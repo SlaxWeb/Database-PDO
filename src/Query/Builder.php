@@ -120,6 +120,26 @@ class Builder
     }
 
     /**
+     * Get INSERT query
+     *
+     * Create the insert query based on the array of data. It prepares the query
+     * for parameter binding, and stores the parameter values in the local parameters
+     * property which can be retrieved with 'getParams' method call.
+     *
+     * @param array $data Data to be inserted
+     * @return string
+     */
+    public function insert(array $data): string
+    {
+        $this->_params = array_values($data);
+        return "INSERT INTO {$this->_table} ({$this->_delim}"
+            . implode("{$this->_delim},{$this->_delim}", array_keys($data))
+            . "{$this->_delim}) VALUES ("
+            . rtrim(str_repeat("?,", count($data)), ",")
+            . ");";
+    }
+
+    /**
      * Get SELECT query
      *
      * Construct the query with all the information gathered and return it. The

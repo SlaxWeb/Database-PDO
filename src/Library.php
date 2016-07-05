@@ -118,13 +118,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function insert(string $table, array $data): bool
     {
-        $table = "{$this->_delim}{$table}{$this->_delim}";
-        $query = "INSERT INTO {$table} ({$this->_delim}"
-            . implode("{$this->_delim},{$this->_delim}", array_keys($data))
-            . "{$this->_delim}) VALUES ("
-            . rtrim(str_repeat("?,", count($data)), ",")
-            . ");";
-        return $this->execute($query, $data);
+        return $this->execute($this->_qBuilder->table($table)->insert($data), $this->_qBuilder->getParams());
     }
 
     /**

@@ -94,10 +94,22 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
 
         $lib->expects($this->once())
             ->method("execute")
-            ->with($testQuery, $data)
+            ->with($testQuery, array_values($data))
             ->willReturn(true);
 
-        $lib->__construct($this->createMock("PDO"), $this->createMock(QueryBuilder::class));
+        $builder = $this->getMockBuilder(QueryBuilder::class)
+            ->setMethods(["insert", "getParams"])
+            ->getMock();
+        $builder->expects($this->once())
+            ->method("insert")
+            ->with($data)
+            ->willReturn($testQuery);
+
+        $builder->expects($this->once())
+            ->method("getParams")
+            ->willReturn(array_values($data));
+
+        $lib->__construct($this->createMock("PDO"), $builder);
         $this->assertTrue($lib->insert($this->_testTable, $data));
     }
 
