@@ -32,7 +32,7 @@ class GroupTest extends \PHPUnit_Framework_TestCase
     {
         $group = new Group;
         $group->setDelim("\"");
-        $group->table("foos");
+        $group->table("\"foos\"");
         $group->where("foo", "bar");
         $group->where("baz", "qux");
 
@@ -40,7 +40,7 @@ class GroupTest extends \PHPUnit_Framework_TestCase
 
         $group = new Group("OR");
         $group->setDelim("\"");
-        $group->table("foos");
+        $group->table("\"foos\"");
         $group->where("foo", "bar");
         $group->where("baz", "qux");
 

@@ -86,7 +86,22 @@ class Builder
     public function table(string $table): self
     {
         $this->_table = $this->_delim . $table . $this->_delim;
-        $this->_predicates->table($table);
+        $this->_predicates->table($this->_table);
+        return $this;
+    }
+
+    /**
+     * Reset predicates
+     *
+     * Restes the predicates list.
+     *
+     * @return self
+     */
+    public function resetPredicates(): self
+    {
+        $this->_predicates = new Group;
+        $this->_predicates->table($this->_table);
+        $this->_predicates->setDelim($this->_delim);
         return $this;
     }
 

@@ -17,6 +17,7 @@
 namespace SlaxWeb\DatabasePDO\Test\Unit;
 
 use SlaxWeb\DatabasePDO\Query\Builder;
+use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 
 class BuilderTest extends \PHPUnit_Framework_TestCase
 {
@@ -82,9 +83,50 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->_builder->where("bar", "baz")->select(["foo"])
         );
 
+        $this->_builder->resetPredicates();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? OR \"foos\".\"bar\" = ?)",
             $this->_builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
+        );
+
+        $this->_builder->resetPredicates();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" <> ?)",
+            $this->_builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
+        );
+    }
+
+    /**
+     * Test where groupping
+     *
+     * Ensure 'groupWhere' and 'orGroupWhere' work properly and are being combined
+     * by the builder as they should be.
+     *
+     * @return void
+     */
+    public function testWhereGroupping()
+    {
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
+            . "  AND (\"foos\".\"bar\" < ? OR \"foos\".\"baz\" > ?))",
+            $this->_builder
+                ->where("bar", "baz")
+                ->groupWhere(function ($builder) {
+                    $builder->where("bar", "10", Predicate::OPR_LESS)
+                        ->orWhere("baz", "1", Predicate::OPR_GRTR);
+                })->select(["foo"])
+        );
+
+        $this->_builder->resetPredicates();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
+            . "  OR (\"foos\".\"bar\" < ? OR \"foos\".\"baz\" > ?))",
+            $this->_builder
+                ->where("bar", "baz")
+                ->orGroupWhere(function ($builder) {
+                    $builder->where("bar", "10", Predicate::OPR_LESS)
+                        ->orWhere("baz", "1", Predicate::OPR_GRTR);
+                })->select(["foo"])
         );
     }
 }

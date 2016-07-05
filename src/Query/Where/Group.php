@@ -77,7 +77,7 @@ class Group
      */
     public function table(string $table): self
     {
-        $this->_table = $this->_delim . $table . $this->_delim;
+        $this->_table = $table;
         return $this;
     }
 
