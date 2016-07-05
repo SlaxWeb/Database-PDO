@@ -83,13 +83,13 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->_builder->where("bar", "baz")->select(["foo"])
         );
 
-        $this->_builder->resetPredicates();
+        $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? OR \"foos\".\"bar\" = ?)",
             $this->_builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
         );
 
-        $this->_builder->resetPredicates();
+        $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" <> ?)",
             $this->_builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
@@ -117,7 +117,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 })->select(["foo"])
         );
 
-        $this->_builder->resetPredicates();
+        $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "  OR (\"foos\".\"bar\" < ? OR \"foos\".\"baz\" > ?))",
@@ -150,7 +150,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 })->select(["foo"])
         );
 
-        $this->_builder->resetPredicates();
+        $this->_builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "OR \"foos\".\"bar\" IN (SELECT \"bars\".\"bar\" FROM \"bars\" WHERE 1=1))",

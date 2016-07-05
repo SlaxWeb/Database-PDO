@@ -91,17 +91,19 @@ class Builder
     }
 
     /**
-     * Reset predicates
+     * Reset the builder
      *
-     * Restes the predicates list.
+     * Restes the builder, by re-initializing the main predicate group, and clearing
+     * out parameters.
      *
      * @return self
      */
-    public function resetPredicates(): self
+    public function reset(): self
     {
         $this->_predicates = new Group;
         $this->_predicates->table($this->_table);
         $this->_predicates->setDelim($this->_delim);
+        $this->_params = [];
         return $this;
     }
 
