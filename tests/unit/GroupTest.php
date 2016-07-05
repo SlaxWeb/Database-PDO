@@ -31,15 +31,19 @@ class GroupTest extends \PHPUnit_Framework_TestCase
     public function testConvert()
     {
         $group = new Group;
+        $group->setDelim("\"");
+        $group->table("foos");
         $group->where("foo", "bar");
         $group->where("baz", "qux");
 
-        $this->assertEquals(" AND (foo = ? AND baz = ?)", $group->convert());
+        $this->assertEquals(" AND (\"foos\".\"foo\" = ? AND \"foos\".\"baz\" = ?)", $group->convert());
 
         $group = new Group("OR");
+        $group->setDelim("\"");
+        $group->table("foos");
         $group->where("foo", "bar");
         $group->where("baz", "qux");
 
-        $this->assertEquals(" OR (foo = ? AND baz = ?)", $group->convert());
+        $this->assertEquals(" OR (\"foos\".\"foo\" = ? AND \"foos\".\"baz\" = ?)", $group->convert());
     }
 }

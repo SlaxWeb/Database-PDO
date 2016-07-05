@@ -19,6 +19,13 @@ use SlaxWeb\DatabasePDO\Query\Builder;
 class Group
 {
     /**
+     * Table
+     *
+     * @var string
+     */
+    protected $_table = "";
+
+    /**
      * Predicament list
      *
      * @var array
@@ -59,6 +66,21 @@ class Group
     {
         $this->_opr = $opr;
     }
+
+    /**
+     * Set table
+     *
+     * Sets the table name for the query. Before setting it wraps it in the delimiters.
+     *
+     * @param string $table Name of the table
+     * @return self
+     */
+    public function table(string $table): self
+    {
+        $this->_table = $this->_delim . $table . $this->_delim;
+        return $this;
+    }
+
     /**
      * Set DB Object Delimiter
      *
@@ -129,7 +151,7 @@ class Group
         $this->_list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->_delim . $column . $this->_delim)
+                ->setColumn($this->_table . "." . $this->_delim . $column . $this->_delim)
                 ->setValue($value)
                 ->setOperator($lOpr)
         ];
@@ -163,7 +185,7 @@ class Group
      */
     public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
     {
-        $group = (new Group($cOpr))->setDelim($this->_delim);
+        $group = (new Group($cOpr))->setDelim($this->_delim)->table($this->_table);
         $predicates($group);
         $this->_list[] = [
             "opr"       =>  "",
@@ -205,7 +227,7 @@ class Group
         $this->_list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->_delim . $column . $this->_delim)
+                ->setColumn($this->_table . $this->_delim . $column . $this->_delim)
                 ->setValue($nested($builder), false, $builder->getParams())
                 ->setOperator($lOpr)
         ];

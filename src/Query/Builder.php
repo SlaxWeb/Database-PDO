@@ -86,6 +86,7 @@ class Builder
     public function table(string $table): self
     {
         $this->_table = $this->_delim . $table . $this->_delim;
+        $this->_predicates->table($table);
         return $this;
     }
 

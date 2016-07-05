@@ -67,4 +67,24 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             ])
         );
     }
+
+    /**
+     * Test basic where
+     *
+     * Test basic where methods are building the where statements as necesarry.
+     *
+     * @return void
+     */
+    public function testBasicWhere()
+    {
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
+            $this->_builder->where("bar", "baz")->select(["foo"])
+        );
+
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? OR \"foos\".\"bar\" = ?)",
+            $this->_builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
+        );
+    }
 }
