@@ -14,6 +14,7 @@
  */
 namespace SlaxWeb\DatabasePDO\Query;
 
+use SlaxWeb\DatabasePDO\Query\Where\Group;
 use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 
 class Builder
@@ -47,6 +48,18 @@ class Builder
     protected $_predicates = null;
 
     /**
+     * Class constructor
+     *
+     * Prepare the predictes list by instantiating the first predicate group object.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->_predicates = new Group;
+    }
+
+    /**
      * Set DB Object Delimiter
      *
      * Sets the Database Object Delimiter character that will be used for creating
@@ -58,6 +71,7 @@ class Builder
     public function setDelim(string $delim): self
     {
         $this->_delim = $delim;
+        $this->_predicates->setDelim($delim);
         return $this;
     }
 
@@ -72,6 +86,22 @@ class Builder
     public function table(string $table): self
     {
         $this->_table = $this->_delim . $table . $this->_delim;
+        $this->_predicates->table($this->_table);
+        return $this;
+    }
+
+    /**
+     * Reset predicates
+     *
+     * Restes the predicates list.
+     *
+     * @return self
+     */
+    public function resetPredicates(): self
+    {
+        $this->_predicates = new Group;
+        $this->_predicates->table($this->_table);
+        $this->_predicates->setDelim($this->_delim);
         return $this;
     }
 
@@ -93,7 +123,10 @@ class Builder
      * Construct the query with all the information gathered and return it. The
      * Method retrieves a column list as an input parameter. All columns are wrapped
      * in the delimiters to prevent collision with reserved keywords. If the array
-     * item key is not numeric, its string value is interpreted as an SQL function.
+     * item is another array, it needs to hold the "func" and "col" keys at least,
+     * defining the SQL DML function, as well as the column name. A third item with
+     * the key name "as" can be added, and this name will be used in the "AS" statement
+     * in the SQL DML for that column.
      *
      * @param array $cols Column definitions
      * @return string
@@ -104,15 +137,21 @@ class Builder
     public function select(array $cols): string
     {
         $query = "SELECT ";
-        foreach ($cols as $key => $name) {
+        foreach ($cols as $name) {
             // create "table"."column"
-            $name = $this->_delim . $this->_table . $this->_delim . "." . $this->_delim . $name . $this->_delim;
-            if (is_string($key)) {
-                $query .= "{$key}({$name}),";
+            if (is_array($name)) {
+                $query .= strtoupper($name["func"] ?? "");
+                $col = $this->_table . "." . $this->_delim . $name["col"] . $this->_delim;
+                $query .= "({$col})";
+                if (isset($name["as"])) {
+                    $query .= " AS {$name["as"]},";
+                }
             } else {
+                $name = $this->_table . "." . $this->_delim . $name . $this->_delim;
                 $query .= "{$name},";
             }
         }
+        $query = rtrim($query, ",");
         $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
         $this->_params = $this->_predicates->getParams();
 
@@ -129,13 +168,95 @@ class Builder
      * @param mixed $value Value of the predicate
      * @param string $lOpr Logical operator, default Predicate::OPR_EQUAL
      * @param string $cOpr Comparisson operator, default string("AND")
-     * @return void
+     * @return self
      */
-    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
+    public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND"): self
     {
-        if ($this->_predicates === null) {
-            $this->_predicates = new Where\Group;
-        }
         $this->_predicates->where($column, $value, $lOpr, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where predicate
+     *
+     * Alias for 'where' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param mixed $value Value of the predicate
+     * @param string $opr Logical operator
+     * @return self
+     */
+    public function orWhere(string $column, $value, string $opr = Predicate::OPR_EQUAL): self
+    {
+        return $this->where($column, $value, $opr, "OR");
+    }
+
+    /**
+     * Add Where Predicate Group
+     *
+     * Adds a group of predicates to the list. The closure received as input must
+     * receive the builder instance for building groups.
+     *
+     * @param closure $predicates Grouped predicates definition closure
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return self
+     */
+    public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
+    {
+        $this->_predicates->groupWhere($predicates, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where Predicate Group
+     *
+     * Alias for 'whereGroup' method call with OR logical operator.
+     *
+     * @param closure $predicates Grouped predicates definition closure
+     * @return self
+     */
+    public function orGroupWhere(\Closure $predicates): self
+    {
+        return $this->groupWhere($predicates, "OR");
+    }
+
+    /**
+     * Where Nested Select
+     *
+     * Add a nested select as a value to the where predicate.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return self
+     */
+    public function nestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN,
+        string $cOpr = "AND"
+    ): self {
+        $this->_predicates->nestedWhere($column, $nested, $lOpr, $cOpr);
+        return $this;
+    }
+
+    /**
+     * Or Where Nested Select
+     *
+     * Alias for 'nestedWhere' method call with OR logical operator.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @return self
+     */
+    public function orNestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN
+    ): self {
+        $this->_predicates->nestedWhere($column, $nested, $lOpr, "OR");
+        return $this;
     }
 }
