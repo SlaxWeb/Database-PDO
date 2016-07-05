@@ -129,4 +129,37 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 })->select(["foo"])
         );
     }
+
+    /**
+     * Test nested where statements
+     *
+     * Ensure that statements are properly nested by the query builder.
+     *
+     * @return void
+     */
+    public function testNestedWhere()
+    {
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
+            . "AND \"foos\".\"bar\" IN (SELECT \"bars\".\"bar\" FROM \"bars\" WHERE 1=1))",
+            $this->_builder
+                ->where("bar", "baz")
+                ->nestedWhere("bar", function ($builder) {
+                    return $builder->table("bars")
+                        ->select(["bar"]);
+                })->select(["foo"])
+        );
+
+        $this->_builder->resetPredicates();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
+            . "OR \"foos\".\"bar\" IN (SELECT \"bars\".\"bar\" FROM \"bars\" WHERE 1=1))",
+            $this->_builder
+                ->where("bar", "baz")
+                ->orNestedWhere("bar", function ($builder) {
+                    return $builder->table("bars")
+                        ->select(["bar"]);
+                })->select(["foo"])
+        );
+    }
 }
