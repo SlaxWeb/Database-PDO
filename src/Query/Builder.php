@@ -107,7 +107,10 @@ class Builder
      * Construct the query with all the information gathered and return it. The
      * Method retrieves a column list as an input parameter. All columns are wrapped
      * in the delimiters to prevent collision with reserved keywords. If the array
-     * item key is not numeric, its string value is interpreted as an SQL function.
+     * item is another array, it needs to hold the "func" and "col" keys at least,
+     * defining the SQL DML function, as well as the column name. A third item with
+     * the key name "as" can be added, and this name will be used in the "AS" statement
+     * in the SQL DML for that column.
      *
      * @param array $cols Column definitions
      * @return string
