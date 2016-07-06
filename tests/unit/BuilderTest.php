@@ -186,4 +186,54 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals(["baz"], $this->_builder->getParams());
     }
+
+    /**
+     * Test joins
+     *
+     * Ensure that joins can be added to the SELECT statement and they are properly
+     * handled.
+     *
+     * @return void
+     */
+    public function testJoin()
+    {
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\",\"bars\".\"bar\" FROM \"foos\" INNER JOIN \"bars\" ON "
+            . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\") WHERE 1=1",
+            $this->_builder
+                ->join("bars")
+                ->joinCond("id", "id")
+                ->joinCols(["bar"])
+                ->select(["foo"])
+        );
+
+        $this->_builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\",\"bars\".\"bar\" FROM \"foos\" INNER JOIN \"bars\" ON "
+            . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\" OR \"foos\".\"id\" < \"bars\".\"id\") WHERE 1=1",
+            $this->_builder
+                ->join("bars")
+                ->joinCond("id", "id")
+                ->orJoinCond("id", "id", Predicate::OPR_LESS)
+                ->joinCols(["bar"])
+                ->select(["foo"])
+        );
+
+        $this->_builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\",\"bars\".\"bar\",\"bazs\".\"baz\" FROM \"foos\" INNER JOIN \"bars\" ON "
+            . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\") LEFT OUTER JOIN \"bazs\" ON (1=1 "
+            . "AND \"foos\".\"id\" = \"bazs\".\"id\") WHERE 1=1",
+            $this->_builder
+                ->join("bars")
+                ->joinCond("id", "id")
+                ->joinCols(["bar"])
+
+                ->join("bazs", Builder::JOIN_LEFT)
+                ->joinCond("id", "id")
+                ->joinCols(["baz"])
+
+                ->select(["foo"])
+        );
+    }
 }

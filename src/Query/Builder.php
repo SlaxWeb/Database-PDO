@@ -20,6 +20,15 @@ use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 class Builder
 {
     /**
+     * Join types
+     */
+    const JOIN_INNER = "INNER JOIN";
+    const JOIN_LEFT = "LEFT OUTER JOIN";
+    const JOIN_RIGHT = "RIGHT OUTER JOIN";
+    const JOIN_FULL = "FULL OUTER JOIN";
+    const JOIN_CROSS = "CROSS JOIN";
+
+    /**
      * Table
      *
      * @var string
@@ -46,6 +55,13 @@ class Builder
      * @var \SlaxWeb\DatabasePDO\Query\Where\Group
      */
     protected $_predicates = null;
+
+    /**
+     * Join list
+     *
+     * @var array
+     */
+    protected $_joins = [];
 
     /**
      * Class constructor
@@ -93,8 +109,8 @@ class Builder
     /**
      * Reset the builder
      *
-     * Restes the builder, by re-initializing the main predicate group, and clearing
-     * out parameters.
+     * Restes the builder, by re-initializing the main predicate group, clearing
+     * out parameters, and join definitions.
      *
      * @return self
      */
@@ -104,6 +120,7 @@ class Builder
         $this->_predicates->table($this->_table);
         $this->_predicates->setDelim($this->_delim);
         $this->_params = [];
+        $this->_joins = [];
         return $this;
     }
 
@@ -158,23 +175,32 @@ class Builder
      */
     public function select(array $cols): string
     {
-        $query = "SELECT ";
-        foreach ($cols as $name) {
-            // create "table"."column"
-            if (is_array($name)) {
-                $query .= strtoupper($name["func"] ?? "");
-                $col = $this->_table . "." . $this->_delim . $name["col"] . $this->_delim;
-                $query .= "({$col})";
-                if (isset($name["as"])) {
-                    $query .= " AS {$name["as"]},";
+        $query = "SELECT " . $this->buildColList($cols, $this->_table);
+
+        // create join statements
+        $joinStmnt = "";
+        foreach ($this->_joins as $join) {
+            // build the join statement
+            $joinStmnt .= "{$join["type"]} {$join["table"]}";
+            if ($join["type"] !== self::JOIN_CROSS) {
+                if (empty($join["cond"])) {
+                    throw new \SlaxWeb\DatabasePDO\Exception\NoJoinConditionException(
+                        "A JOIN without a condition is not possible, unless it is a CROSS JOIN."
+                    );
                 }
-            } else {
-                $name = $this->_table . "." . $this->_delim . $name . $this->_delim;
-                $query .= "{$name},";
+                $joinStmnt .= " ON (1=1";
+                foreach ($join["cond"] as $cond) {
+                    $joinStmnt .= " {$cond["lOpr"]} {$this->_table}.{$this->_delim}{$cond["primKey"]}{$this->_delim} "
+                        . "{$cond["cOpr"]} {$join["table"]}.{$this->_delim}{$cond["forKey"]}{$this->_delim}";
+                }
+                $joinStmnt .= ") ";
             }
+
+            // add joined columns to select column list
+            $query .= $this->buildColList($join["colList"], $join["table"]);
         }
         $query = rtrim($query, ",");
-        $query .= " FROM {$this->_table} WHERE 1=1" . $this->_predicates->convert();
+        $query .= " FROM {$this->_table} {$joinStmnt}WHERE 1=1" . $this->_predicates->convert();
         $this->_params = $this->_predicates->getParams();
 
         return $query;
@@ -280,5 +306,132 @@ class Builder
     ): self {
         $this->_predicates->nestedWhere($column, $nested, $lOpr, "OR");
         return $this;
+    }
+
+    /**
+     * Add table to join
+     *
+     * Adds a new table to join with the main table to the list of joins. If only
+     * a table is added without a condition with the 'joinCond', an exception will
+     * be thrown when an attempt to create a query is made.
+     *
+     * @param string $table Table to join to
+     * @param string $type Join type, default self::JOIN_INNER
+     * @return self
+     */
+    public function join(string $table, string $type = self::JOIN_INNER): self
+    {
+        $this->_joins[] = [
+            "table"     =>  $this->_delim . $table . $this->_delim,
+            "type"      =>  $type,
+            "cond"      =>  [],
+            "colList"   =>  []
+        ];
+        return $this;
+    }
+
+    /**
+     * Add join condition
+     *
+     * Adds a JOIN condition to the last join added. If no join was yet added, an
+     * exception is raised.
+     *
+     * @param string $primKey Key of the main table for the condition
+     * @param string $forKey Key of the joining table
+     * @param string $cOpr Comparison operator for the two keys
+     * @param string $lOpr Logical operator for multiple JOIN conditions
+     * @return self
+     *
+     * @exceptions \SlaxWeb\DatabasePDO\Exception\NoJoinTableException
+     */
+    public function joinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL, $lOpr = "AND"): self
+    {
+        end($this->_joins);
+        if (($key = key($this->_joins)) === null) {
+            throw new \SlaxWeb\DatabasePDO\Exception\NoJoinTableException(
+                "Attempt to add a JOIN condition was made, when no table was yet added to join with"
+            );
+        }
+        $this->_joins[$key]["cond"][] = [
+            "primKey"   =>  $primKey,
+            "forKey"    =>  $forKey,
+            "cOpr"      =>  $cOpr,
+            "lOpr"      =>  $lOpr
+        ];
+        reset($this->_joins);
+        return $this;
+    }
+
+    /**
+     * Add OR join condition
+     *
+     * Alias for the 'joinCond' with the "OR" logical operator.
+     *
+     * @param string $primKey Key of the main table for the condition
+     * @param string $forKey Key of the joining table
+     * @param string $cOpr Comparison operator for the two keys
+     * @param string $lOpr Logical operator for multiple JOIN conditions
+     * @return self
+     */
+    public function orJoinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL): self
+    {
+        return $this->joinCond($primKey, $forKey, $cOpr, "OR");
+    }
+
+    /**
+     * Join Columns
+     *
+     * Add columns to include in the select column list. If no table for joining
+     * was yet added, an exception is raised. Same rules apply to the column list
+     * as in the 'select' method.
+     *
+     * @param array $cols Column list
+     * @return self
+     *
+     * @exceptions \SlaxWeb\DatabasePDO\Exception\NoJoinTableException
+     */
+    public function joinCols(array $cols): self
+    {
+        end($this->_joins);
+        if (($key = key($this->_joins)) === null) {
+            throw new \SlaxWeb\DatabasePDO\Exception\NoJoinTableException(
+                "Attempt to add joined table columns was made, when no table was yet added to join with"
+            );
+        }
+        $this->_joins[$key]["colList"] = array_merge($this->_joins[$key]["colList"], $cols);
+        reset($this->_joins);
+        return $this;
+        
+    }
+
+    /**
+     * Build column list
+     *
+     * Builds a column list from the input column list and the table name. It automatically
+     * prepends columns with the supplied table name and wraps the columns in the
+     * database object delimiters.
+     *
+     * @param array $cols Array of columns to be added to the list
+     * @param string $table Table name used to prepend the columns with
+     * @return string
+     */
+    protected function buildColList(array $cols, string $table): string
+    {
+        $colList = "";
+        foreach ($cols as $name) {
+            // create "table"."column"
+            if (is_array($name)) {
+                $colList .= strtoupper($name["func"] ?? "");
+                $col = $table . "." . $this->_delim . $name["col"] . $this->_delim;
+                $colList .= "({$col})";
+                if (isset($name["as"])) {
+                    $colList .= " AS {$name["as"]},";
+                }
+            } else {
+                $name = $table . "." . $this->_delim . $name . $this->_delim;
+                $colList .= "{$name},";
+            }
+        }
+        return $colList;
     }
 }
