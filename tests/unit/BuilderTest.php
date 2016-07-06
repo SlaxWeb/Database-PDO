@@ -42,7 +42,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
     /**
      * Test insert
      *
-     * Ensure the builder creates a proper INSERT SQL DML statement, and properly 
+     * Ensure the builder creates a proper INSERT SQL DML statement, and properly
      * populates the parameters array.
      *
      * @return void

@@ -401,7 +401,6 @@ class Builder
         $this->_joins[$key]["colList"] = array_merge($this->_joins[$key]["colList"], $cols);
         reset($this->_joins);
         return $this;
-        
     }
 
     /**
