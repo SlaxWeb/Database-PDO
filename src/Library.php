@@ -205,6 +205,74 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Add table to join
+     *
+     * Adds a new table to join with the main table to the list of joins. If only
+     * a table is added without a condition with the 'joinCond', an exception will
+     * be thrown when an attempt to create a query is made.
+     *
+     * @param string $table Table to join to
+     * @param string $type Join type, default self::JOIN_INNER
+     * @return void
+     */
+    public function join(string $table, string $type = Builder::JOIN_INNER)
+    {
+        $this->_qBuilder->join($table, $type);
+    }
+
+    /**
+     * Left Join
+     *
+     * Alias for 'join' method with LEFT join as second parameter.
+     *
+     * @param string $table Table to join to
+     * @return void
+     */
+    public function leftJoin(string $table)
+    {
+        $this->join($table, Builder::JOIN_LEFT);
+    }
+
+    /**
+     * Right Join
+     *
+     * Alias for 'join' method with RIGHT join as second parameter.
+     *
+     * @param string $table Table to join to
+     * @return void
+     */
+    public function rightJoin(string $table)
+    {
+        $this->join($table, Builder::JOIN_RIGHT);
+    }
+
+    /**
+     * Full Join
+     *
+     * Alias for 'join' method with FULL join as second parameter.
+     *
+     * @param string $table Table to join to
+     * @return void
+     */
+    public function fullJoin(string $table)
+    {
+        $this->join($table, Builder::JOIN_FULL);
+    }
+
+    /**
+     * Cross Join
+     *
+     * Alias for 'join' method with CROSS join as second parameter.
+     *
+     * @param string $table Table to join to
+     * @return void
+     */
+    public function crossJoin(string $table)
+    {
+        $this->join($table, Builder::JOIN_CROSS);
+    }
+
+    /**
      * Get last error
      *
      * Retrieves the error of the last executed query. If there was no error, an
