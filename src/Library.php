@@ -232,7 +232,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * be thrown when an attempt to create a query is made.
      *
      * @param string $table Table to join to
-     * @param string $type Join type, default self::JOIN_INNER
+     * @param string $type Join type, default Builder::JOIN_INNER
      * @return void
      */
     public function join(string $table, string $type = Builder::JOIN_INNER)
