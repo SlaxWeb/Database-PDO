@@ -205,6 +205,26 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Where Nested Select
+     *
+     * Add a nested select as a value to the where predicate.
+     *
+     * @param string $column Column name
+     * @param closure $nested Nested builder
+     * @param string $lOpr Logical operator, default Predicate::OPR_IN
+     * @param string $cOpr Comparisson operator, default string("AND")
+     * @return void
+     */
+    public function nestedWhere(
+        string $column,
+        \Closure $nested,
+        string $lOpr = Predicate::OPR_IN,
+        string $cOpr = "AND"
+    ) {
+        $this->_qBuilder->nestedWhere($column, $nested, $lOpr, $cOpr);
+    }
+
+    /**
      * Add table to join
      *
      * Adds a new table to join with the main table to the list of joins. If only
