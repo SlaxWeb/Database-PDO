@@ -29,6 +29,12 @@ class Builder
     const JOIN_CROSS = "CROSS JOIN";
 
     /**
+     * Order by directions
+     */
+    const ORDER_ASC = "ASC";
+    const ORDER_DESC = "DESC";
+
+    /**
      * Table
      *
      * @var string
@@ -215,9 +221,15 @@ class Builder
         }
         $query = rtrim($query, ",");
         $query .= " FROM {$this->table} {$joinStmnt}WHERE 1=1" . $this->predicates->convert();
+
         if ($this->groupCols !== []) {
             $query .= " GROUP BY " . implode(",", $this->groupCols);
         }
+
+        if ($this->orderCols !== []) {
+            $query .= " ORDER BY " . implode(",", $this->orderCols);
+        }
+
         $this->params = $this->predicates->getParams();
 
         return $query;
