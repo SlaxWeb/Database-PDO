@@ -208,6 +208,9 @@ class Builder
         }
         $query = rtrim($query, ",");
         $query .= " FROM {$this->table} {$joinStmnt}WHERE 1=1" . $this->predicates->convert();
+        if ($this->groupCols !== []) {
+            $query .= " GROUP BY " . implode(",", $this->groupCols);
+        }
         $this->params = $this->predicates->getParams();
 
         return $query;
