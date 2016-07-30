@@ -270,4 +270,24 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->builder->orderBy("foo")->orderBy("bar", Builder::ORDER_DESC, "MAX")->select(["foo", "bar"])
         );
     }
+
+    /**
+     * Test limit/offset
+     *
+     * Ensure that the LIMIT and OFFSET are properly set and added to the query.
+     *
+     * @return void
+     */
+    public function testLimitOffset()
+    {
+        $this->builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 LIMIT 10",
+            $this->builder->limit(10)->select(["foo"])
+        );
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 LIMIT 10 OFFSET 10",
+            $this->builder->limit(10, 10)->select(["foo"])
+        );
+    }
 }
