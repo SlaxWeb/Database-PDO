@@ -23,35 +23,35 @@ class Group
      *
      * @var string
      */
-    protected $_table = "";
+    protected $table = "";
 
     /**
      * Predicate list
      *
      * @var array
      */
-    protected $_list = [];
+    protected $list = [];
 
     /**
      * Logical operator
      *
      * @var string
      */
-    protected $_opr = "";
+    protected $opr = "";
 
     /**
      * Parameter list
      *
      * @var array
      */
-    protected $_params = [];
+    protected $params = [];
 
     /**
      * SQL Object Delimiter
      *
      * @var string
      */
-    protected $_delim = "";
+    protected $delim = "";
 
     /**
      * Class constructor
@@ -64,7 +64,7 @@ class Group
      */
     public function __construct(string $opr = "AND")
     {
-        $this->_opr = $opr;
+        $this->opr = $opr;
     }
 
     /**
@@ -77,7 +77,7 @@ class Group
      */
     public function table(string $table): self
     {
-        $this->_table = $table;
+        $this->table = $table;
         return $this;
     }
 
@@ -93,7 +93,7 @@ class Group
      */
     public function setDelim(string $delim): self
     {
-        $this->_delim = $delim;
+        $this->delim = $delim;
         return $this;
     }
 
@@ -107,17 +107,17 @@ class Group
      */
     public function convert(): string
     {
-        if (count($this->_list) < 1) {
+        if (count($this->list) < 1) {
             return "";
         }
 
-        $where = " {$this->_opr} (";
-        $first = array_shift($this->_list);
+        $where = " {$this->opr} (";
+        $first = array_shift($this->list);
         $where .= $first["predicate"]->convert();
-        $this->_params = array_merge($this->_params, $first["predicate"]->getParams());
-        foreach ($this->_list as $predicate) {
+        $this->params = array_merge($this->params, $first["predicate"]->getParams());
+        foreach ($this->list as $predicate) {
             $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert();
-            $this->_params = array_merge($this->_params, $predicate["predicate"]->getParams());
+            $this->params = array_merge($this->params, $predicate["predicate"]->getParams());
         }
         return "{$where})";
     }
@@ -131,7 +131,7 @@ class Group
      */
     public function getParams(): array
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
@@ -148,10 +148,10 @@ class Group
      */
     public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND"): self
     {
-        $this->_list[] = [
+        $this->list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->_table . "." . $this->_delim . $column . $this->_delim)
+                ->setColumn($this->table . "." . $this->delim . $column . $this->delim)
                 ->setValue($value)
                 ->setOperator($lOpr)
         ];
@@ -185,9 +185,9 @@ class Group
      */
     public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
     {
-        $group = (new Group($cOpr))->setDelim($this->_delim)->table($this->_table);
+        $group = (new Group($cOpr))->setDelim($this->delim)->table($this->table);
         $predicates($group);
-        $this->_list[] = [
+        $this->list[] = [
             "opr"       =>  "",
             "predicate" =>  $group
         ];
@@ -223,11 +223,11 @@ class Group
         string $lOpr = Predicate::OPR_IN,
         string $cOpr = "AND"
     ): self {
-        $builder = (new Builder)->setDelim($this->_delim);
-        $this->_list[] = [
+        $builder = (new Builder)->setDelim($this->delim);
+        $this->list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->_table . "." . $this->_delim . $column . $this->_delim)
+                ->setColumn($this->table . "." . $this->delim . $column . $this->delim)
                 ->setValue($nested($builder), false, $builder->getParams())
                 ->setOperator($lOpr)
         ];

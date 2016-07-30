@@ -33,35 +33,35 @@ class Builder
      *
      * @var string
      */
-    protected $_table = "";
+    protected $table = "";
 
     /**
      * Parameters
      *
      * @var array
      */
-    protected $_params = [];
+    protected $params = [];
 
     /**
      * SQL Object Delimiter
      *
      * @var string
      */
-    protected $_delim = "";
+    protected $delim = "";
 
     /**
      * Where Predicate Group object
      *
      * @var \SlaxWeb\DatabasePDO\Query\Where\Group
      */
-    protected $_predicates = null;
+    protected $predicates = null;
 
     /**
      * Join list
      *
      * @var array
      */
-    protected $_joins = [];
+    protected $joins = [];
 
     /**
      * Class constructor
@@ -72,7 +72,7 @@ class Builder
      */
     public function __construct()
     {
-        $this->_predicates = new Group;
+        $this->predicates = new Group;
     }
 
     /**
@@ -86,8 +86,8 @@ class Builder
      */
     public function setDelim(string $delim): self
     {
-        $this->_delim = $delim;
-        $this->_predicates->setDelim($delim);
+        $this->delim = $delim;
+        $this->predicates->setDelim($delim);
         return $this;
     }
 
@@ -101,8 +101,8 @@ class Builder
      */
     public function table(string $table): self
     {
-        $this->_table = $this->_delim . $table . $this->_delim;
-        $this->_predicates->table($this->_table);
+        $this->table = $this->delim . $table . $this->delim;
+        $this->predicates->table($this->table);
         return $this;
     }
 
@@ -116,11 +116,11 @@ class Builder
      */
     public function reset(): self
     {
-        $this->_predicates = new Group;
-        $this->_predicates->table($this->_table);
-        $this->_predicates->setDelim($this->_delim);
-        $this->_params = [];
-        $this->_joins = [];
+        $this->predicates = new Group;
+        $this->predicates->table($this->table);
+        $this->predicates->setDelim($this->delim);
+        $this->params = [];
+        $this->joins = [];
         return $this;
     }
 
@@ -133,7 +133,7 @@ class Builder
      */
     public function getParams(): array
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
@@ -148,10 +148,10 @@ class Builder
      */
     public function insert(array $data): string
     {
-        $this->_params = array_values($data);
-        return "INSERT INTO {$this->_table} ({$this->_delim}"
-            . implode("{$this->_delim},{$this->_delim}", array_keys($data))
-            . "{$this->_delim}) VALUES ("
+        $this->params = array_values($data);
+        return "INSERT INTO {$this->table} ({$this->delim}"
+            . implode("{$this->delim},{$this->delim}", array_keys($data))
+            . "{$this->delim}) VALUES ("
             . rtrim(str_repeat("?,", count($data)), ",")
             . ")";
     }
@@ -175,11 +175,11 @@ class Builder
      */
     public function select(array $cols): string
     {
-        $query = "SELECT " . $this->buildColList($cols, $this->_table);
+        $query = "SELECT " . $this->buildColList($cols, $this->table);
 
         // create join statements
         $joinStmnt = "";
-        foreach ($this->_joins as $join) {
+        foreach ($this->joins as $join) {
             // build the join statement
             $joinStmnt .= "{$join["type"]} {$join["table"]}";
             if ($join["type"] !== self::JOIN_CROSS) {
@@ -190,8 +190,8 @@ class Builder
                 }
                 $joinStmnt .= " ON (1=1";
                 foreach ($join["cond"] as $cond) {
-                    $joinStmnt .= " {$cond["lOpr"]} {$this->_table}.{$this->_delim}{$cond["primKey"]}{$this->_delim} "
-                        . "{$cond["cOpr"]} {$join["table"]}.{$this->_delim}{$cond["forKey"]}{$this->_delim}";
+                    $joinStmnt .= " {$cond["lOpr"]} {$this->table}.{$this->delim}{$cond["primKey"]}{$this->delim} "
+                        . "{$cond["cOpr"]} {$join["table"]}.{$this->delim}{$cond["forKey"]}{$this->delim}";
                 }
                 $joinStmnt .= ") ";
             }
@@ -200,8 +200,8 @@ class Builder
             $query .= $this->buildColList($join["colList"], $join["table"]);
         }
         $query = rtrim($query, ",");
-        $query .= " FROM {$this->_table} {$joinStmnt}WHERE 1=1" . $this->_predicates->convert();
-        $this->_params = $this->_predicates->getParams();
+        $query .= " FROM {$this->table} {$joinStmnt}WHERE 1=1" . $this->predicates->convert();
+        $this->params = $this->predicates->getParams();
 
         return $query;
     }
@@ -220,7 +220,7 @@ class Builder
      */
     public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND"): self
     {
-        $this->_predicates->where($column, $value, $lOpr, $cOpr);
+        $this->predicates->where($column, $value, $lOpr, $cOpr);
         return $this;
     }
 
@@ -251,7 +251,7 @@ class Builder
      */
     public function groupWhere(\Closure $predicates, string $cOpr = "AND"): self
     {
-        $this->_predicates->groupWhere($predicates, $cOpr);
+        $this->predicates->groupWhere($predicates, $cOpr);
         return $this;
     }
 
@@ -285,7 +285,7 @@ class Builder
         string $lOpr = Predicate::OPR_IN,
         string $cOpr = "AND"
     ): self {
-        $this->_predicates->nestedWhere($column, $nested, $lOpr, $cOpr);
+        $this->predicates->nestedWhere($column, $nested, $lOpr, $cOpr);
         return $this;
     }
 
@@ -304,7 +304,7 @@ class Builder
         \Closure $nested,
         string $lOpr = Predicate::OPR_IN
     ): self {
-        $this->_predicates->nestedWhere($column, $nested, $lOpr, "OR");
+        $this->predicates->nestedWhere($column, $nested, $lOpr, "OR");
         return $this;
     }
 
@@ -321,8 +321,8 @@ class Builder
      */
     public function join(string $table, string $type = self::JOIN_INNER): self
     {
-        $this->_joins[] = [
-            "table"     =>  $this->_delim . $table . $this->_delim,
+        $this->joins[] = [
+            "table"     =>  $this->delim . $table . $this->delim,
             "type"      =>  $type,
             "cond"      =>  [],
             "colList"   =>  []
@@ -346,19 +346,19 @@ class Builder
      */
     public function joinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL, $lOpr = "AND"): self
     {
-        end($this->_joins);
-        if (($key = key($this->_joins)) === null) {
+        end($this->joins);
+        if (($key = key($this->joins)) === null) {
             throw new \SlaxWeb\DatabasePDO\Exception\NoJoinTableException(
                 "Attempt to add a JOIN condition was made, when no table was yet added to join with"
             );
         }
-        $this->_joins[$key]["cond"][] = [
+        $this->joins[$key]["cond"][] = [
             "primKey"   =>  $primKey,
             "forKey"    =>  $forKey,
             "cOpr"      =>  $cOpr,
             "lOpr"      =>  $lOpr
         ];
-        reset($this->_joins);
+        reset($this->joins);
         return $this;
     }
 
@@ -392,14 +392,14 @@ class Builder
      */
     public function joinCols(array $cols): self
     {
-        end($this->_joins);
-        if (($key = key($this->_joins)) === null) {
+        end($this->joins);
+        if (($key = key($this->joins)) === null) {
             throw new \SlaxWeb\DatabasePDO\Exception\NoJoinTableException(
                 "Attempt to add joined table columns was made, when no table was yet added to join with"
             );
         }
-        $this->_joins[$key]["colList"] = array_merge($this->_joins[$key]["colList"], $cols);
-        reset($this->_joins);
+        $this->joins[$key]["colList"] = array_merge($this->joins[$key]["colList"], $cols);
+        reset($this->joins);
         return $this;
     }
 
@@ -421,13 +421,13 @@ class Builder
             // create "table"."column"
             if (is_array($name)) {
                 $colList .= strtoupper($name["func"] ?? "");
-                $col = $table . "." . $this->_delim . $name["col"] . $this->_delim;
+                $col = $table . "." . $this->delim . $name["col"] . $this->delim;
                 $colList .= "({$col})";
                 if (isset($name["as"])) {
                     $colList .= " AS {$name["as"]},";
                 }
             } else {
-                $name = $table . "." . $this->_delim . $name . $this->_delim;
+                $name = $table . "." . $this->delim . $name . $this->delim;
                 $colList .= "{$name},";
             }
         }

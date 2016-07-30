@@ -37,28 +37,28 @@ class Predicate
      *
      * @var string
      */
-    protected $_col = "";
+    protected $col = "";
 
     /**
      * Value
      *
      * @var mixed
      */
-    protected $_val = null;
+    protected $val = null;
 
     /**
      * Comparison operator
      *
      * @var string
      */
-    protected $_opr = self::OPR_EQUAL;
+    protected $opr = self::OPR_EQUAL;
 
     /**
      * Parameters
      *
      * @var array
      */
-    protected $_params = [];
+    protected $params = [];
 
     /**
      * Convert to string
@@ -71,34 +71,34 @@ class Predicate
      */
     public function convert(): string
     {
-        $predicate = "{$this->_col} {$this->_opr} ";
-        switch ($this->_opr) {
+        $predicate = "{$this->col} {$this->opr} ";
+        switch ($this->opr) {
             case self::OPR_NULL:
             case self::OPR_NOTNULL:
-                if ($this->_val !== null || strtolower($this->_val) !== "null") {
+                if ($this->val !== null || strtolower($this->val) !== "null") {
                     // @todo: throw exception
                 }
                 $predicate = rtrim($predicate);
                 break;
 
             case self::OPR_BTWN:
-                if (is_array($this->_val) === false || count($this->_val) !== 2) {
+                if (is_array($this->val) === false || count($this->val) !== 2) {
                     // @todo: throw exception
                 }
-                $predicate .= implode(" AND ", $this->_val);
+                $predicate .= implode(" AND ", $this->val);
                 break;
 
             case self::OPR_IN:
             case self::OPR_NOTIN:
-                if (is_string($this->_val)) {
-                    $predicate .= "({$this->_val})";
+                if (is_string($this->val)) {
+                    $predicate .= "({$this->val})";
                     break;
                 }
-                $predicate .= "(" . implode(",", $this->_val) . ")";
+                $predicate .= "(" . implode(",", $this->val) . ")";
                 break;
 
             default:
-                $predicate .= $this->_val;
+                $predicate .= $this->val;
         }
 
         return $predicate;
@@ -114,7 +114,7 @@ class Predicate
      */
     public function setColumn(string $column): self
     {
-        $this->_col = $column;
+        $this->col = $column;
         return $this;
     }
 
@@ -136,9 +136,9 @@ class Predicate
             $this->setOperator(self::OPR_NULL);
             return $this;
         }
-        $this->_val = $prep ? $this->_prepValues($value) : $value;
+        $this->val = $prep ? $this->_prepValues($value) : $value;
         if ($params !== []) {
-            $this->_params = $params;
+            $this->params = $params;
         }
         return $this;
     }
@@ -154,7 +154,7 @@ class Predicate
      */
     public function setOperator(string $operator): self
     {
-        $this->_opr = $operator;
+        $this->opr = $operator;
         return $this;
     }
 
@@ -167,14 +167,14 @@ class Predicate
      */
     public function getParams(): array
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
      * Prepare values
      *
      * Prepare the values by replacing the actual value with the question mark placeholder
-     * and add the value to the '_params' array.
+     * and add the value to the 'params' array.
      *
      * @param mixed $value Value to be prepared
      * @return mixed
@@ -183,14 +183,14 @@ class Predicate
     {
         if (is_array($value)) {
             foreach ($value as &$param) {
-                $this->_params[] = $param;
+                $this->params[] = $param;
                 $param = "?";
             }
             unset($param);
             return $value;
         }
         if (in_array(is_string($value) ? strtolower($value) : $value, [null, "null"]) === false) {
-            $this->_params[] = $value;
+            $this->params[] = $value;
             $value = "?";
         }
         return $value;
