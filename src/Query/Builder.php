@@ -71,6 +71,13 @@ class Builder
     protected $groupCols = [];
 
     /**
+     * Order by columns
+     *
+     * @var array
+     */
+    protected $orderCols = [];
+
+    /**
      * Class constructor
      *
      * Prepare the predictes list by instantiating the first predicate group object.
@@ -424,6 +431,26 @@ class Builder
     public function groupBy(string $col): self
     {
         $this->groupCols[] = $this->table . "." . $this->delim . $col . $this->delim;
+        return $this;
+    }
+
+    /**
+     * Order by
+     *
+     * Add a column to the order by list.
+     *
+     * @param string $col Column name to be added to the group by list
+     * @param string $direction Direction of order, default self::ORDER_ASC
+     * @param string $func SQL function to use ontop of the column, default string("")
+     * @return self
+     */
+    public function orderBy(string $col, string $direction = self::ORDER_ASC, string $func = ""): self
+    {
+        $orderData = "{$this->table}.{$this->delim}{$col}{$this->delim}";
+        if ($func !== "") {
+            $orderData = "{$func}({$orderData})";
+        }
+        $this->orderCols[] = "{$orderData} {$direction}";
         return $this;
     }
 
