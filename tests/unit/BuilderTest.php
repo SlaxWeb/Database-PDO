@@ -290,4 +290,26 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->builder->limit(10, 10)->select(["foo"])
         );
     }
+
+    /**
+     * Test update
+     *
+     * Ensure that the builder constructs the statement properly, and that it appends
+     * it with set where predicates.
+     *
+     * @reutrn void
+     */
+    public function testUpdate()
+    {
+        $this->builder->reset();
+        $this->assertEquals(
+            "UPDATE \"foos\" SET \"foos\".\"foo\" = 'bar' WHERE 1=1",
+            $this->builder->update(["foo" => "bar"])
+        );
+        $this->assertEquals(
+            "UPDATE \"foos\" SET \"foos\".\"foo\" = 'bar' WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
+            $this->builder->where("bar", "baz")->update(["foo" => "bar"])
+        );
+        $this->assertEquals(["baz"], $this->builder->getParams());
+    }
 }

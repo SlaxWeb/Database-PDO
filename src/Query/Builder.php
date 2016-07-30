@@ -203,9 +203,6 @@ class Builder
      *
      * @param array $cols Column definitions
      * @return string
-     *
-     * @todo: build complicated select statements when additional where predicates
-     *        are defined, joins, group bys, etc.
      */
     public function select(array $cols): string
     {
@@ -235,6 +232,7 @@ class Builder
         }
         $query = rtrim($query, ",");
         $query .= " FROM {$this->table} {$joinStmnt}WHERE 1=1" . $this->predicates->convert();
+        $this->params = $this->predicates->getParams();
 
         if ($this->groupCols !== []) {
             $query .= " GROUP BY " . implode(",", $this->groupCols);
@@ -248,8 +246,29 @@ class Builder
             $query .= " LIMIT {$this->limit}" . ($this->offset > 0 ? " OFFSET {$this->offset}" : "");
         }
 
-        $this->params = $this->predicates->getParams();
+        return $query;
+    }
 
+    /**
+     * Update
+     *
+     * Create the update statement with the where predicates. As input it takes an
+     * array of columns as array item keys and their new values as the array item
+     * values.
+     *
+     * @param array $cols Array of column names and their new values
+     * @return string
+     */
+    public function update(array $cols): string
+    {
+        $query = "UPDATE {$this->table} SET "
+            . implode(",", array_map(function ($value, $column) {
+                return "{$this->table}.{$this->delim}{$column}{$this->delim} = "
+                    . (is_string($value) ? "'{$value}'" : $value);
+            }, $cols, array_keys($cols)));
+
+        $query .= " WHERE 1=1" . $this->predicates->convert();
+        $this->params = $this->predicates->getParams();
         return $query;
     }
 
