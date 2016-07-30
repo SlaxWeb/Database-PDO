@@ -84,6 +84,20 @@ class Builder
     protected $orderCols = [];
 
     /**
+     * Limit
+     *
+     * @var int
+     */
+    protected $limit = 0;
+
+    /**
+     * Offset
+     *
+     * @var int
+     */
+    protected $offset = 0;
+
+    /**
      * Class constructor
      *
      * Prepare the predictes list by instantiating the first predicate group object.
@@ -463,6 +477,23 @@ class Builder
             $orderData = "{$func}({$orderData})";
         }
         $this->orderCols[] = "{$orderData} {$direction}";
+        return $this;
+    }
+
+    /**
+     * Limit
+     *
+     * Limit number of rows to be returned from the database. Second parameter will
+     * also add an offset to the statement.
+     *
+     * @param int $limit Number of rows to limit the result set to
+     * @param int $offset Number of rows for the result to be offset from, default int(0)
+     * @return self
+     */
+    public function limit(int $limit, int $offset = 0): self
+    {
+        $this->limit = $limit;
+        $this->offset = $offset;
         return $this;
     }
 
