@@ -64,6 +64,13 @@ class Builder
     protected $joins = [];
 
     /**
+     * Group columns
+     *
+     * @var array
+     */
+    protected $groupCols = [];
+
+    /**
      * Class constructor
      *
      * Prepare the predictes list by instantiating the first predicate group object.
@@ -400,6 +407,20 @@ class Builder
         }
         $this->joins[$key]["colList"] = array_merge($this->joins[$key]["colList"], $cols);
         reset($this->joins);
+        return $this;
+    }
+
+    /**
+     * Group by
+     *
+     * Add a column to the group by list.
+     *
+     * @param string $col Column name to be added to the group by list.
+     * @return self
+     */
+    public function groupBy(string $col): self
+    {
+        $this->groupCols[] = $this->delim . $col . $this->delim;
         return $this;
     }
 
