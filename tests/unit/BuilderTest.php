@@ -312,4 +312,26 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals(["baz"], $this->builder->getParams());
     }
+
+    /**
+     * Test delete
+     *
+     * Ensure that the builder constructs the delete statement properly, with the
+     * previously added where predicates.
+     *
+     * @return void
+     */
+    public function testDelete()
+    {
+        $this->builder->reset();
+        $this->assertEquals(
+            "DELETE FROM \"foos\" WHERE 1=1",
+            $this->builder->delete()
+        );
+        $this->assertEquals(
+            "DELETE FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
+            $this->builder->where("bar", "baz")->delete()
+        );
+        $this->assertEquals(["baz"], $this->builder->getParams());
+    }
 }

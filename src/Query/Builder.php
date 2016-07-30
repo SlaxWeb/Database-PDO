@@ -273,6 +273,20 @@ class Builder
     }
 
     /**
+     * Delete
+     *
+     * Create delete statement with the where predicates.
+     *
+     * @return string
+     */
+    public function delete(): string
+    {
+        $query = "DELETE FROM {$this->table} WHERE 1=1" . $this->predicates->convert();
+        $this->params = $this->predicates->getParams();
+        return $query;
+    }
+
+    /**
      * Add Where Predicate
      *
      * Adds a SQL DML WHERE predicate to the group of predicates. If the group does
