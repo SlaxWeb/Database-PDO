@@ -33,35 +33,35 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * @var string
      */
-    protected $_delim = "\"";
+    protected $delim = "\"";
 
     /**
      * PDO instance
      *
      * @var \PDO
      */
-    protected $_pdo = null;
+    protected $pdo = null;
 
     /**
      * Query Builder
      *
      * @var \SlaxWeb\DatabasePDO\Query\Builder
      */
-    protected $_qBuilder = null;
+    protected $qBuilder = null;
 
     /**
      * Last Executed Statement
      *
      * @var \PDOStatement
      */
-    protected $_stmnt = null;
+    protected $stmnt = null;
 
     /**
      * Database Error Object
      *
      * @var \SlaxWeb\Database\Error
      */
-    protected $_error = null;
+    protected $error = null;
 
     /**
      * Class constrcutor
@@ -75,9 +75,9 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function __construct(PDO $pdo, Builder $queryBuilder)
     {
-        $this->_pdo = $pdo;
-        $this->_qBuilder = $queryBuilder;
-        $this->_qBuilder->setDelim($this->_delim);
+        $this->pdo = $pdo;
+        $this->qBuilder = $queryBuilder;
+        $this->qBuilder->setDelim($this->delim);
     }
 
     /**
@@ -94,12 +94,12 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function execute(string $query, array $data = []): bool
     {
-        if (($this->_stmnt = $this->_pdo->prepare($query)) === false) {
-            $this->_error = new Error($this->_pdo->errorInfo()[2]);
+        if (($this->stmnt = $this->pdo->prepare($query)) === false) {
+            $this->error = new Error($this->pdo->errorInfo()[2]);
             return false;
         }
-        if ($this->_stmnt->execute(array_values($data)) === false) {
-            $this->_error = new Error($this->_stmnt->errorInfo()[2]);
+        if ($this->stmnt->execute(array_values($data)) === false) {
+            $this->error = new Error($this->stmnt->errorInfo()[2]);
             return false;
         }
         return true;
@@ -118,7 +118,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function insert(string $table, array $data): bool
     {
-        return $this->execute($this->_qBuilder->table($table)->insert($data), $this->_qBuilder->getParams());
+        return $this->execute($this->qBuilder->table($table)->insert($data), $this->qBuilder->getParams());
     }
 
     /**
@@ -141,10 +141,10 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function select(string $table, array $cols): ResultInterface
     {
-        $query = $this->_qBuilder
+        $query = $this->qBuilder
             ->table($table)
             ->select($cols);
-        if ($this->execute($query, $this->_qBuilder->getParams()) === false) {
+        if ($this->execute($query, $this->qBuilder->getParams()) === false) {
             throw new QueryException("Query execution resulted in an error");
         }
         return $this->fetch();
@@ -163,10 +163,10 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function fetch(): ResultInterface
     {
-        if (!($this->_stmnt instanceof PDOStatement)) {
+        if (!($this->stmnt instanceof PDOStatement)) {
             throw new NoDataException("No statement has yet been executed. Unable to fetch data.");
         }
-        if (is_array(($result = $this->_stmnt->fetchAll(PDO::FETCH_OBJ))) === false) {
+        if (is_array(($result = $this->stmnt->fetchAll(PDO::FETCH_OBJ))) === false) {
             throw new NoDataException("Statement did not yield a valid result set.");
         }
 
@@ -186,7 +186,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function where(string $column, $value, string $lOpr = Predicate::OPR_EQUAL, string $cOpr = "AND")
     {
-        $this->_qBuilder->where($column, $value, $lOpr, $cOpr);
+        $this->qBuilder->where($column, $value, $lOpr, $cOpr);
     }
 
     /**
@@ -201,7 +201,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function groupWhere(\Closure $predicates, string $cOpr = "AND")
     {
-        $this->_qBuilder->groupWhere($predicates, $cOpr);
+        $this->qBuilder->groupWhere($predicates, $cOpr);
     }
 
     /**
@@ -221,7 +221,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
         string $lOpr = Predicate::OPR_IN,
         string $cOpr = "AND"
     ) {
-        $this->_qBuilder->nestedWhere($column, $nested, $lOpr, $cOpr);
+        $this->qBuilder->nestedWhere($column, $nested, $lOpr, $cOpr);
     }
 
     /**
@@ -237,7 +237,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function join(string $table, string $type = Builder::JOIN_INNER)
     {
-        $this->_qBuilder->join($table, $type);
+        $this->qBuilder->join($table, $type);
     }
 
     /**
@@ -293,6 +293,54 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Add join condition
+     *
+     * Adds a JOIN condition to the last join added. If no join was yet added, an
+     * exception is raised.
+     *
+     * @param string $primKey Key of the main table for the condition
+     * @param string $forKey Key of the joining table
+     * @param string $cOpr Comparison operator for the two keys
+     * @param string $lOpr Logical operator for multiple JOIN conditions
+     * @return void
+     */
+    public function joinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL)
+    {
+        $this->qBuilder->joinCond($primKey, $forKey, $cOpr);
+    }
+
+    /**
+     * Add OR join condition
+     *
+     * Alias for the 'joinCond' with the "OR" logical operator.
+     *
+     * @param string $primKey Key of the main table for the condition
+     * @param string $forKey Key of the joining table
+     * @param string $cOpr Comparison operator for the two keys
+     * @param string $lOpr Logical operator for multiple JOIN conditions
+     * @return void
+     */
+    public function orJoinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL)
+    {
+        $this->qBuilder->joinCond($primKey, $forKey, $cOpr, "OR");
+    }
+
+    /**
+     * Join Columns
+     *
+     * Add columns to include in the select column list. If no table for joining
+     * was yet added, an exception is raised. Same rules apply to the column list
+     * as in the 'select' method.
+     *
+     * @param array $cols Column list
+     * @return void
+     */
+    public function joinCols(array $cols)
+    {
+        $this->qBuilder->joinCols($cols);
+    }
+
+    /**
      * Get last error
      *
      * Retrieves the error of the last executed query. If there was no error, an
@@ -304,11 +352,11 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function lastError(): Error
     {
-        if ($this->_error === null) {
+        if ($this->error === null) {
             throw new NoErrorException;
         }
 
-        return $this->_error;
+        return $this->error;
     }
 
     /**
@@ -318,8 +366,8 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * @return void
      */
-    protected function _setError()
+    protected function setError()
     {
-        $this->_error = new Error($this->_pdo->errorInfo()[2]);
+        $this->error = new Error($this->pdo->errorInfo()[2]);
     }
 }
