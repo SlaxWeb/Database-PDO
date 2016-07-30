@@ -244,6 +244,10 @@ class Builder
             $query .= " ORDER BY " . implode(",", $this->orderCols);
         }
 
+        if ($this->limit > 0) {
+            $query .= " LIMIT {$this->limit}" . ($this->offset > 0 ? " OFFSET {$this->offset}" : "");
+        }
+
         $this->params = $this->predicates->getParams();
 
         return $query;
