@@ -168,6 +168,20 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Delete query
+     *
+     * Run an delete query against the database. Returns bool(true) on success,
+     * and bool(false) on error.
+     *
+     * @param string $table Table on which the delete statement is to be executed
+     * @return vool
+     */
+    public function delete(string $table): bool
+    {
+        return $this->execute($this->qBuilder->table($table)->delete());
+    }
+
+    /**
      * Fetch Results
      *
      * It fetches the results from the last executed statement, creates the Result
