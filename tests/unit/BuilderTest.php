@@ -253,4 +253,21 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->builder->groupBy("foo")->groupBy("bar")->select(["foo", "bar"])
         );
     }
+
+    /**
+     * Test order by
+     *
+     * Ensure the builder properly adds the order by to the SELECT statement.
+     *
+     * @return void
+     */
+    public function testOrderBy()
+    {
+        $this->builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\",\"foos\".\"bar\" FROM \"foos\" WHERE 1=1 "
+            . "ORDER BY \"foos\".\"foo\" ASC,MAX(\"foos\".\"bar\") DESC",
+            $this->builder->orderBy("foo")->orderBy("bar", Builder::ORDER_DESC, "MAX")->select(["foo", "bar"])
+        );
+    }
 }
