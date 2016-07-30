@@ -341,6 +341,49 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     }
 
     /**
+     * Group by
+     *
+     * Add a column to the group by list.
+     *
+     * @param string $col Column name to be added to the group by list.
+     * @return void
+     */
+    public function groupBy(string $col)
+    {
+        $this->qBuilder->groupBy($col);
+    }
+
+    /**
+     * Order by
+     *
+     * Add a column to the order by list.
+     *
+     * @param string $col Column name to be added to the group by list
+     * @param string $direction Direction of order, default self::ORDER_ASC
+     * @param string $func SQL function to use ontop of the column, default string("")
+     * @return void
+     */
+    public function orderBy(string $col, string $direction = Builder::ORDER_ASC, string $func = "")
+    {
+        $this->qBuilder->orderBy($col, $direction, $func);
+    }
+
+    /**
+     * Limit
+     *
+     * Limit number of rows to be returned from the database. Second parameter will
+     * also add an offset to the statement.
+     *
+     * @param int $limit Number of rows to limit the result set to
+     * @param int $offset Number of rows for the result to be offset from, default int(0)
+     * @return void
+     */
+    public function limit(int $limit, int $offset = 0)
+    {
+        $this->qBuilder->limit($limit, $offset);
+    }
+
+    /**
      * Get last error
      *
      * Retrieves the error of the last executed query. If there was no error, an
