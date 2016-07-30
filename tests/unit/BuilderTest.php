@@ -26,13 +26,13 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
      *
      * @var \SlaxWeb\DatabasePDO\Query\Builder
      */
-    protected $_builder = null;
+    protected $builder = null;
 
     protected function setUp()
     {
-        $this->_builder = new Builder;
+        $this->builder = new Builder;
         // statically set delimiter and table name for all test
-        $this->_builder->setDelim("\"")->table("foos");
+        $this->builder->setDelim("\"")->table("foos");
     }
 
     protected function tearDown()
@@ -51,9 +51,9 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             "INSERT INTO \"foos\" (\"foo\",\"bar\") VALUES (?,?)",
-            $this->_builder->insert(["foo" => "baz", "bar" => "qux"])
+            $this->builder->insert(["foo" => "baz", "bar" => "qux"])
         );
-        $this->assertEquals(["baz", "qux"], $this->_builder->getParams());
+        $this->assertEquals(["baz", "qux"], $this->builder->getParams());
     }
 
     /**
@@ -66,11 +66,11 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
      */
     public function testSelect()
     {
-        $this->assertEquals("SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1", $this->_builder->select(["foo"]));
+        $this->assertEquals("SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1", $this->builder->select(["foo"]));
         $this->assertEquals(
             "SELECT COUNT(\"foos\".\"foo\") AS fooCnt,\"foos\".\"bar\",MAX(\"foos\".\"baz\") "
             . "AS bazMax FROM \"foos\" WHERE 1=1",
-            $this->_builder->select([
+            $this->builder->select([
                 [
                     "func"  =>  "count",
                     "col"   =>  "foo",
@@ -97,23 +97,23 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
     {
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
-            $this->_builder->where("bar", "baz")->select(["foo"])
+            $this->builder->where("bar", "baz")->select(["foo"])
         );
-        $this->assertEquals(["baz"], $this->_builder->getParams());
+        $this->assertEquals(["baz"], $this->builder->getParams());
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? OR \"foos\".\"bar\" = ?)",
-            $this->_builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
+            $this->builder->where("bar", "baz")->orWhere("bar", "qux")->select(["foo"])
         );
-        $this->assertEquals(["baz", "qux"], $this->_builder->getParams());
+        $this->assertEquals(["baz", "qux"], $this->builder->getParams());
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" <> ?)",
-            $this->_builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
+            $this->builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
         );
-        $this->assertEquals(["baz"], $this->_builder->getParams());
+        $this->assertEquals(["baz"], $this->builder->getParams());
     }
 
     /**
@@ -129,27 +129,27 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "  AND (\"foos\".\"bar\" < ? OR \"foos\".\"baz\" > ?))",
-            $this->_builder
+            $this->builder
                 ->where("bar", "baz")
                 ->groupWhere(function ($builder) {
                     $builder->where("bar", 10, Predicate::OPR_LESS)
                         ->orWhere("baz", 1, Predicate::OPR_GRTR);
                 })->select(["foo"])
         );
-        $this->assertEquals(["baz", 10, 1], $this->_builder->getParams());
+        $this->assertEquals(["baz", 10, 1], $this->builder->getParams());
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "  OR (\"foos\".\"bar\" < ? OR \"foos\".\"baz\" > ?))",
-            $this->_builder
+            $this->builder
                 ->where("bar", "baz")
                 ->orGroupWhere(function ($builder) {
                     $builder->where("bar", "10", Predicate::OPR_LESS)
                         ->orWhere("baz", "1", Predicate::OPR_GRTR);
                 })->select(["foo"])
         );
-        $this->assertEquals(["baz", 10, 1], $this->_builder->getParams());
+        $this->assertEquals(["baz", 10, 1], $this->builder->getParams());
     }
 
     /**
@@ -164,27 +164,27 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "AND \"foos\".\"bar\" IN (SELECT \"bars\".\"bar\" FROM \"bars\" WHERE 1=1))",
-            $this->_builder
+            $this->builder
                 ->where("bar", "baz")
                 ->nestedWhere("bar", function ($builder) {
                     return $builder->table("bars")
                         ->select(["bar"]);
                 })->select(["foo"])
         );
-        $this->assertEquals(["baz"], $this->_builder->getParams());
+        $this->assertEquals(["baz"], $this->builder->getParams());
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = ? "
             . "OR \"foos\".\"bar\" IN (SELECT \"bars\".\"bar\" FROM \"bars\" WHERE 1=1))",
-            $this->_builder
+            $this->builder
                 ->where("bar", "baz")
                 ->orNestedWhere("bar", function ($builder) {
                     return $builder->table("bars")
                         ->select(["bar"]);
                 })->select(["foo"])
         );
-        $this->assertEquals(["baz"], $this->_builder->getParams());
+        $this->assertEquals(["baz"], $this->builder->getParams());
     }
 
     /**
@@ -200,18 +200,18 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(
             "SELECT \"foos\".\"foo\",\"bars\".\"bar\" FROM \"foos\" INNER JOIN \"bars\" ON "
             . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\") WHERE 1=1",
-            $this->_builder
+            $this->builder
                 ->join("bars")
                 ->joinCond("id", "id")
                 ->joinCols(["bar"])
                 ->select(["foo"])
         );
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\",\"bars\".\"bar\" FROM \"foos\" INNER JOIN \"bars\" ON "
             . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\" OR \"foos\".\"id\" < \"bars\".\"id\") WHERE 1=1",
-            $this->_builder
+            $this->builder
                 ->join("bars")
                 ->joinCond("id", "id")
                 ->orJoinCond("id", "id", Predicate::OPR_LESS)
@@ -219,12 +219,12 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 ->select(["foo"])
         );
 
-        $this->_builder->reset();
+        $this->builder->reset();
         $this->assertEquals(
             "SELECT \"foos\".\"foo\",\"bars\".\"bar\",\"bazs\".\"baz\" FROM \"foos\" INNER JOIN \"bars\" ON "
             . "(1=1 AND \"foos\".\"id\" = \"bars\".\"id\") LEFT OUTER JOIN \"bazs\" ON (1=1 "
             . "AND \"foos\".\"id\" = \"bazs\".\"id\") WHERE 1=1",
-            $this->_builder
+            $this->builder
                 ->join("bars")
                 ->joinCond("id", "id")
                 ->joinCols(["bar"])
@@ -234,6 +234,23 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 ->joinCols(["baz"])
 
                 ->select(["foo"])
+        );
+    }
+
+    /**
+     * Test group by
+     *
+     * Ensure that the builder properly adds the column list to the group by.
+     *
+     * @return void
+     */
+    public function testGroupBy()
+    {
+        $this->builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\",\"foos\".\"bar\" FROM \"foos\" WHERE 1=1 "
+            . "GROUP BY \"foos\".\"foo\",\"foos\".\"bar\"",
+            $this->builder->groupBy("foo")->groupBy("bar")->select(["foo", "bar"])
         );
     }
 }

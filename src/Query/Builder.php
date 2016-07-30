@@ -423,7 +423,7 @@ class Builder
      */
     public function groupBy(string $col): self
     {
-        $this->groupCols[] = $this->delim . $col . $this->delim;
+        $this->groupCols[] = $this->table . "." . $this->delim . $col . $this->delim;
         return $this;
     }
 
