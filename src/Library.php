@@ -174,7 +174,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * and bool(false) on error.
      *
      * @param string $table Table on which the delete statement is to be executed
-     * @return vool
+     * @return bool
      */
     public function delete(string $table): bool
     {
