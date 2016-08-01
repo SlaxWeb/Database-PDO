@@ -47,7 +47,7 @@ class Provider implements \Pimple\ServiceProviderInterface
                 // we have logged the error, time to rethrow it
                 throw $e;
             }
-            return new \SlaxWeb\DatabasePDO\Library($pdo);
+            return new \SlaxWeb\DatabasePDO\Library($pdo, new \SlaxWeb\DatabasePDO\Query\Builder);
         };
     }
 }
