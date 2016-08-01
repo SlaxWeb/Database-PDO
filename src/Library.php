@@ -76,6 +76,9 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     public function __construct(PDO $pdo, Builder $queryBuilder)
     {
         $this->pdo = $pdo;
+        if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === "mysql") {
+            $this->delim = "`";
+        }
         $this->qBuilder = $queryBuilder;
         $this->qBuilder->setDelim($this->delim);
     }
@@ -95,11 +98,11 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     public function execute(string $query, array $data = []): bool
     {
         if (($this->stmnt = $this->pdo->prepare($query)) === false) {
-            $this->error = new Error($this->pdo->errorInfo()[2]);
+            $this->error = new Error($this->pdo->errorInfo()[2], $query);
             return false;
         }
         if ($this->stmnt->execute(array_values($data)) === false) {
-            $this->error = new Error($this->stmnt->errorInfo()[2]);
+            $this->error = new Error($this->stmnt->errorInfo()[2], $query);
             return false;
         }
         return true;
