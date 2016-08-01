@@ -29,7 +29,7 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->_predicate = (new Predicate)
-            ->setColumn("\"foo\".\"bar\"");
+            ->setColumn("\"bar\"");
     }
 
     protected function tearDown()
@@ -50,30 +50,30 @@ class PredicateTest extends \PHPUnit_Framework_TestCase
     {
         $this->_predicate->setValue(1);
         $this->_predicate->setOperator(Predicate::OPR_EQUAL);
-        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert("\"foo\""));
         $this->assertEquals([1], $this->_predicate->getParams());
 
         $this->setUp();
         $this->_predicate->setValue("foo");
         $this->_predicate->setOperator(Predicate::OPR_EQUAL);
-        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" = ?", $this->_predicate->convert("\"foo\""));
         $this->assertEquals(["foo"], $this->_predicate->getParams());
 
         $this->setUp();
         $this->_predicate->setValue(null);
-        $this->assertEquals("\"foo\".\"bar\" IS NULL", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" IS NULL", $this->_predicate->convert("\"foo\""));
         $this->assertEquals([], $this->_predicate->getParams());
 
         $this->setUp();
         $this->_predicate->setValue([1, 100]);
         $this->_predicate->setOperator(Predicate::OPR_BTWN);
-        $this->assertEquals("\"foo\".\"bar\" BETWEEN ? AND ?", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" BETWEEN ? AND ?", $this->_predicate->convert("\"foo\""));
         $this->assertEquals([1, 100], $this->_predicate->getParams());
 
         $this->setUp();
         $this->_predicate->setValue([1, 2, 3, 4]);
         $this->_predicate->setOperator(Predicate::OPR_IN);
-        $this->assertEquals("\"foo\".\"bar\" IN (?,?,?,?)", $this->_predicate->convert());
+        $this->assertEquals("\"foo\".\"bar\" IN (?,?,?,?)", $this->_predicate->convert("\"foo\""));
         $this->assertEquals([1, 2, 3, 4], $this->_predicate->getParams());
     }
 }

@@ -67,11 +67,12 @@ class Predicate
      * operator are valid and an SQL DML can safely be constructed with those values.
      * If not, an exception is thrown.
      *
+     * @param string $table Table name to prepend to columns
      * @return string
      */
-    public function convert(): string
+    public function convert(string $table): string
     {
-        $predicate = "{$this->col} {$this->opr} ";
+        $predicate = "{$table}.{$this->col} {$this->opr} ";
         switch ($this->opr) {
             case self::OPR_NULL:
             case self::OPR_NOTNULL:

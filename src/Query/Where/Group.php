@@ -101,22 +101,28 @@ class Group
      * Convert Predicate Group to Statement
      *
      * Creates the SQL DML Where statement from the predicate list and returns it
-     * to the caller.
+     * to the caller. Takes the name of the table to be prepended to the column
+     * names as input. If nothing is supplied, then the property 'table' is used.
      *
+     * @param string $table Name of the table to prepend column names with, default string("")
      * @return string
      */
-    public function convert(): string
+    public function convert(string $table = ""): string
     {
         if (count($this->list) < 1) {
             return "";
         }
 
+        if ($table === "") {
+            $table = $this->table;
+        }
+
         $where = " {$this->opr} (";
         $first = array_shift($this->list);
-        $where .= $first["predicate"]->convert();
+        $where .= $first["predicate"]->convert($table);
         $this->params = array_merge($this->params, $first["predicate"]->getParams());
         foreach ($this->list as $predicate) {
-            $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert();
+            $where .= " {$predicate["opr"]} " . $predicate["predicate"]->convert($table);
             $this->params = array_merge($this->params, $predicate["predicate"]->getParams());
         }
         return "{$where})";
@@ -151,7 +157,7 @@ class Group
         $this->list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->table . "." . $this->delim . $column . $this->delim)
+                ->setColumn($this->delim . $column . $this->delim)
                 ->setValue($value)
                 ->setOperator($lOpr)
         ];
@@ -227,7 +233,7 @@ class Group
         $this->list[] = [
             "opr"       =>  $cOpr,
             "predicate" =>  (new Predicate)
-                ->setColumn($this->table . "." . $this->delim . $column . $this->delim)
+                ->setColumn($this->delim . $column . $this->delim)
                 ->setValue($nested($builder), false, $builder->getParams())
                 ->setOperator($lOpr)
         ];
