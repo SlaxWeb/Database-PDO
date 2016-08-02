@@ -30,6 +30,10 @@ class Provider implements \Pimple\ServiceProviderInterface
     public function register(Container $container)
     {
         $container["databaseLibrary.service"] = function (Container $container) {
+            return new \SlaxWeb\DatabasePDO\Library($container["pdo.service"], $container["queryBuilder.service"]);
+        };
+
+        $container["pdo.service"] = function (Container $container) {
             $config = $container["config.service"]["database.connection"];
             $dsn = "{$config["driver"]}:dbname={$config["database"]};host={$config["hostname"]}";
 
@@ -47,7 +51,10 @@ class Provider implements \Pimple\ServiceProviderInterface
                 // we have logged the error, time to rethrow it
                 throw $e;
             }
-            return new \SlaxWeb\DatabasePDO\Library($pdo, new \SlaxWeb\DatabasePDO\Query\Builder);
+        };
+
+        $container["queryBuilder.service"] = function (Container $container) {
+            return new \SlaxWeb\DatabasePDO\Query\Builder;
         };
     }
 }
