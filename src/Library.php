@@ -19,8 +19,6 @@ use PDOStatement;
 use SlaxWeb\Database\Error;
 use SlaxWeb\DatabasePDO\Query\Builder;
 use SlaxWeb\DatabasePDO\Query\Where\Predicate;
-use SlaxWeb\Database\Exception\QueryException;
-use SlaxWeb\Database\Exception\NoDataException;
 use SlaxWeb\Database\Exception\NoErrorException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
@@ -128,19 +126,16 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * Select query
      *
      * Run a select query against the database and return the result set if it was
-     * successful. Throw an exception on error. The input array defines a list of
-     * columns that need to get selected from the database. If the array item is
-     * another array, it needs to hold the "func" and "col" keys at least, defining
-     * the SQL DML function, as well as the column name. A third item with the key
-     * name "as" can be added, and this name will be used in the "AS" statement
+     * successful. On error it returns an empty result set. The input array defines
+     * a list of columns that need to get selected from the database. If the array
+     * item is another array, it needs to hold the "func" and "col" keys at least,
+     * defining the SQL DML function, as well as the column name. A third item with
+     * the key name "as" can be added, and this name will be used in the "AS" statement
      * in the SQL DML for that column.
      *
      * @param string $table Table on which the select statement is to be executed
      * @param array $cols Array of columns for the SELECT statement
      * @return \SlaxWeb\DatabasePDO\Result
-     *
-     * @exceptions \SlaxWeb\Database\Exception\QueryException
-     *             \SlaxWeb\Database\Exception\NoDataException
      */
     public function select(string $table, array $cols): ResultInterface
     {
