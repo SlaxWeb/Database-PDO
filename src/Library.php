@@ -192,16 +192,12 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * yield a valid result set, an exception is thrown.
      *
      * @return \SlaxWeb\DatabasePDO\Result
-     *
-     * @exceptions \SlaxWeb\Database\Exception\NoDataException
      */
     public function fetch(): ResultInterface
     {
-        if (!($this->stmnt instanceof PDOStatement)) {
-            throw new NoDataException("No statement has yet been executed. Unable to fetch data.");
-        }
-        if (is_array(($result = $this->stmnt->fetchAll(PDO::FETCH_OBJ))) === false) {
-            throw new NoDataException("Statement did not yield a valid result set.");
+        if (!($this->stmnt instanceof PDOStatement)
+            || is_array(($result = $this->stmnt->fetchAll(PDO::FETCH_OBJ))) === false) {
+            return new Result([]);
         }
 
         return new Result($result);
