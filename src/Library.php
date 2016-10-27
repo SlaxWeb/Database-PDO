@@ -95,6 +95,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function execute(string $query, array $data = []): bool
     {
+        $this->qBuilder->reset();
         if (($this->stmnt = $this->pdo->prepare($query)) === false) {
             $this->error = new Error($this->pdo->errorInfo()[2], $query);
             return false;
