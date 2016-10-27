@@ -147,9 +147,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
         $query = $this->qBuilder
             ->table($table)
             ->select($cols);
-        if ($this->execute($query, $this->qBuilder->getParams()) === false) {
-            throw new QueryException("Query execution resulted in an error");
-        }
+        $this->execute($query, $this->qBuilder->getParams());
         return $this->fetch();
     }
 

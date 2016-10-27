@@ -252,21 +252,13 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->with("TEST QUERY", [])
             ->will($this->onConsecutiveCalls(true, false));
 
-        $lib->expects($this->once())
+        $lib->expects($this->exactly(2))
             ->method("fetch")
             ->willReturn($this->createMock(Result::class));
 
         $lib->__construct($pdo, $qBuilder);
 
         $this->assertInstanceOf(Result::class, $lib->select($table, $cols));
-
-        try {
-            $lib->select($table, $cols);
-        } catch (QueryException $e) {
-            $this->assertEquals("Query execution resulted in an error", $e->getMessage());
-            $thrown = true;
-        } finally {
-            $this->assertTrue($thrown);
-        }
+        $this->assertInstanceOf(Result::class, $lib->select($table, $cols));
     }
 }
