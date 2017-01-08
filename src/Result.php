@@ -90,7 +90,11 @@ class Result implements ResultInterface
      */
     public function next(): bool
     {
-        return isset($this->_rawData[++$this->_currRow]);
+        if (isset($this->_rawData[$this->_currRow + 1])) {
+            $this->_currRow++;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -104,7 +108,11 @@ class Result implements ResultInterface
      */
     public function prev(): bool
     {
-        return isset($this->_rawData[--$this->_currRow]);
+        if (isset($this->_rawData[$this->_currRow - 1])) {
+            $this->_currRow--;
+            return true;
+        }
+        return false;
     }
 
     /**
