@@ -97,11 +97,11 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     {
         $this->qBuilder->reset();
         if (($this->stmnt = $this->pdo->prepare($query)) === false) {
-            $this->error = new Error($this->pdo->errorInfo()[2], $query);
+            $this->setError($query);
             return false;
         }
         if ($this->stmnt->execute(array_values($data)) === false) {
-            $this->error = new Error($this->stmnt->errorInfo()[2], $query);
+            $this->setError($query);
             return false;
         }
         return true;
@@ -431,10 +431,11 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * Sets the error based on PDOs error info.
      *
+     * @param string $query Query that caused the error. Default ""
      * @return void
      */
-    protected function setError()
+    protected function setError(string $query = "")
     {
-        $this->error = new Error($this->pdo->errorInfo()[2]);
+        $this->error = new Error($this->pdo->errorInfo()[2], $query);
     }
 }
