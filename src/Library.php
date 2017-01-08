@@ -256,64 +256,12 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * be thrown when an attempt to create a query is made.
      *
      * @param string $table Table to join to
-     * @param string $type Join type, default Builder::JOIN_INNER
+     * @param string $type Join type, default "INNER JOIN"
      * @return void
      */
-    public function join(string $table, string $type = Builder::JOIN_INNER)
+    public function join(string $table, string $type = "INNER JOIN")
     {
         $this->qBuilder->join($table, $type);
-    }
-
-    /**
-     * Left Join
-     *
-     * Alias for 'join' method with LEFT join as second parameter.
-     *
-     * @param string $table Table to join to
-     * @return void
-     */
-    public function leftJoin(string $table)
-    {
-        $this->join($table, Builder::JOIN_LEFT);
-    }
-
-    /**
-     * Right Join
-     *
-     * Alias for 'join' method with RIGHT join as second parameter.
-     *
-     * @param string $table Table to join to
-     * @return void
-     */
-    public function rightJoin(string $table)
-    {
-        $this->join($table, Builder::JOIN_RIGHT);
-    }
-
-    /**
-     * Full Join
-     *
-     * Alias for 'join' method with FULL join as second parameter.
-     *
-     * @param string $table Table to join to
-     * @return void
-     */
-    public function fullJoin(string $table)
-    {
-        $this->join($table, Builder::JOIN_FULL);
-    }
-
-    /**
-     * Cross Join
-     *
-     * Alias for 'join' method with CROSS join as second parameter.
-     *
-     * @param string $table Table to join to
-     * @return void
-     */
-    public function crossJoin(string $table)
-    {
-        $this->join($table, Builder::JOIN_CROSS);
     }
 
     /**

@@ -20,15 +20,6 @@ use SlaxWeb\DatabasePDO\Query\Where\Predicate;
 class Builder
 {
     /**
-     * Join types
-     */
-    const JOIN_INNER = "INNER JOIN";
-    const JOIN_LEFT = "LEFT OUTER JOIN";
-    const JOIN_RIGHT = "RIGHT OUTER JOIN";
-    const JOIN_FULL = "FULL OUTER JOIN";
-    const JOIN_CROSS = "CROSS JOIN";
-
-    /**
      * Order by directions
      */
     const ORDER_ASC = "ASC";
@@ -213,7 +204,7 @@ class Builder
         foreach ($this->joins as $join) {
             // build the join statement
             $joinStmnt .= "{$join["type"]} {$join["table"]}";
-            if ($join["type"] !== self::JOIN_CROSS) {
+            if ($join["type"] !== "CROSS JOIN") {
                 if (empty($join["cond"])) {
                     throw new \SlaxWeb\DatabasePDO\Exception\NoJoinConditionException(
                         "A JOIN without a condition is not possible, unless it is a CROSS JOIN."
@@ -396,10 +387,10 @@ class Builder
      * be thrown when an attempt to create a query is made.
      *
      * @param string $table Table to join to
-     * @param string $type Join type, default self::JOIN_INNER
+     * @param string $type Join type, default "INNER JOIN"
      * @return self
      */
-    public function join(string $table, string $type = self::JOIN_INNER): self
+    public function join(string $table, string $type = "INNER JOIN"): self
     {
         $this->joins[] = [
             "table"     =>  $this->delim . $table . $this->delim,

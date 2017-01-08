@@ -229,7 +229,7 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
                 ->joinCond("id", "id")
                 ->joinCols(["bar"])
 
-                ->join("bazs", Builder::JOIN_LEFT)
+                ->join("bazs", "LEFT OUTER JOIN")
                 ->joinCond("id", "id")
                 ->joinCols(["baz"])
 
