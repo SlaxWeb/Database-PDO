@@ -11,8 +11,8 @@
     "require": {
         "php":  ">=7.0.0",
         "ext-pdo": "*",
-        "slaxweb/database": "dev-develop",
-        "slaxweb/config": "dev-develop"
+        "slaxweb/database": "~0.4",
+        "slaxweb/config": "~0.2"
     },
     "require-dev": {
         "codeception/codeception": "~2.2",
@@ -28,8 +28,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-develop": "0.4.x-dev"
+            "dev-master": "0.5.x-dev"
         }
-    },
-    "minimum-stability": "dev"
+    }
 }
