@@ -41,7 +41,7 @@ class Provider implements \Pimple\ServiceProviderInterface
             }
 
             try {
-                $pdo = new \PDO($dsn, $config["username"], $config["password"]);
+                return new \PDO($dsn, $config["username"], $config["password"]);
             } catch (\PDOException $e) {
                 $container["logger.service"]()->emergency(
                     "Connection to the database failed.",
