@@ -101,7 +101,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
             return false;
         }
         if ($this->stmnt->execute(array_values($data)) === false) {
-            $this->setError($query);
+            $this->setError($query, $this->stmnt->errorInfo());
             return false;
         }
         return true;
@@ -380,10 +380,14 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * Sets the error based on PDOs error info.
      *
      * @param string $query Query that caused the error. Default ""
+     * @param array $errInfo Error info array, if left empty PDO Error Info array is obtained
      * @return void
      */
-    protected function setError(string $query = "")
+    protected function setError(string $query = "", array $errInfo = [])
     {
-        $this->error = new Error($this->pdo->errorInfo()[2], $query);
+        if (empty($errInfo)) {
+            $errInfo = $this->pdo->errorInfo();
+        }
+        $this->error = new Error($errInfo[2], $query);
     }
 }
