@@ -36,7 +36,7 @@ class Provider implements \Pimple\ServiceProviderInterface
         $container["pdo.service"] = function (Container $container) {
             $config = $container["config.service"]["database.connection"];
             $dsn = "{$config["driver"]}:dbname={$config["database"]};host={$config["hostname"]}";
-            if (isset($config["port"]) === true || $config["port"] > 0) {
+            if (isset($config["port"]) === true && $config["port"] > 0) {
                 $dsn .= ";port={$config["port"]}";
             }
 
