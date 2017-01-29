@@ -254,12 +254,12 @@ class Builder
     {
         $query = "UPDATE {$this->table} SET "
             . implode(",", array_map(function ($value, $column) {
-                return "{$this->table}.{$this->delim}{$column}{$this->delim} = "
-                    . (is_string($value) ? "'{$value}'" : $value);
+                $this->params[] = $value;
+                return "{$this->table}.{$this->delim}{$column}{$this->delim} = ?";
             }, $cols, array_keys($cols)));
 
         $query .= " WHERE 1=1" . $this->predicates->convert();
-        $this->params = $this->predicates->getParams();
+        $this->params = array_merge($this->params, $this->predicates->getParams());
         return $query;
     }
 
