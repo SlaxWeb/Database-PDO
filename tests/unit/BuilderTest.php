@@ -303,14 +303,16 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
     {
         $this->builder->reset();
         $this->assertEquals(
-            "UPDATE \"foos\" SET \"foos\".\"foo\" = 'bar' WHERE 1=1",
+            "UPDATE \"foos\" SET \"foos\".\"foo\" = ? WHERE 1=1",
             $this->builder->update(["foo" => "bar"])
         );
+        $this->assertEquals($this->builder->getParams(), ["bar"]);
+        $this->builder->reset();
         $this->assertEquals(
-            "UPDATE \"foos\" SET \"foos\".\"foo\" = 'bar' WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
+            "UPDATE \"foos\" SET \"foos\".\"foo\" = ? WHERE 1=1 AND (\"foos\".\"bar\" = ?)",
             $this->builder->where("bar", "baz")->update(["foo" => "bar"])
         );
-        $this->assertEquals(["baz"], $this->builder->getParams());
+        $this->assertEquals($this->builder->getParams(), ["bar", "baz"]);
     }
 
     /**
