@@ -173,11 +173,16 @@ class Builder
      */
     public function insert(array $data): string
     {
-        $this->params = array_values($data);
         return "INSERT INTO {$this->table} ({$this->delim}"
             . implode("{$this->delim},{$this->delim}", array_keys($data))
             . "{$this->delim}) VALUES ("
-            . rtrim(str_repeat("?,", count($data)), ",")
+            . implode(",", array_map(function ($value, $column) {
+                if (is_array($value) && isset($value["func"])) {
+                    return $value["func"];
+                }
+                $this->params[] = $value;
+                return "?";
+            }, $data, array_keys($data)))
             . ")";
     }
 
@@ -254,8 +259,12 @@ class Builder
     {
         $query = "UPDATE {$this->table} SET "
             . implode(",", array_map(function ($value, $column) {
+                $col = "{$this->table}.{$this->delim}{$column}{$this->delim} = ";
+                if (is_array($value) && isset($value["func"])) {
+                    return $col . $value["func"];
+                }
                 $this->params[] = $value;
-                return "{$this->table}.{$this->delim}{$column}{$this->delim} = ?";
+                return "{$col}?";
             }, $cols, array_keys($cols)));
 
         $query .= " WHERE 1=1" . $this->predicates->convert();

@@ -183,6 +183,9 @@ class Predicate
     public function _prepValues($value)
     {
         if (is_array($value)) {
+            if (isset($value["func"])) {
+                return $value["func"];
+            }
             foreach ($value as &$param) {
                 $this->params[] = $param;
                 $param = "?";
