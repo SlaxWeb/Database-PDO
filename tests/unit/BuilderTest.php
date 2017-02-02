@@ -54,6 +54,13 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->builder->insert(["foo" => "baz", "bar" => "qux"])
         );
         $this->assertEquals(["baz", "qux"], $this->builder->getParams());
+
+        $this->builder->reset();
+        $this->assertEquals(
+            "INSERT INTO \"foos\" (\"foo\",\"bar\") VALUES (?,NOW())",
+            $this->builder->insert(["foo" => "baz", "bar" => ["func" => "NOW()"]])
+        );
+        $this->assertEquals(["baz"], $this->builder->getParams());
     }
 
     /**
