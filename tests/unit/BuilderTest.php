@@ -121,6 +121,13 @@ class BuilderTest extends \PHPUnit_Framework_TestCase
             $this->builder->where("bar", "baz", Predicate::OPR_DIFF)->select(["foo"])
         );
         $this->assertEquals(["baz"], $this->builder->getParams());
+
+        $this->builder->reset();
+        $this->assertEquals(
+            "SELECT \"foos\".\"foo\" FROM \"foos\" WHERE 1=1 AND (\"foos\".\"bar\" = NOW())",
+            $this->builder->where("bar", ["func" => "NOW()"])->select(["foo"])
+        );
+        $this->assertEquals([], $this->builder->getParams());
     }
 
     /**
