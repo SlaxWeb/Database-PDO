@@ -254,8 +254,12 @@ class Builder
     {
         $query = "UPDATE {$this->table} SET "
             . implode(",", array_map(function ($value, $column) {
+                $col = "{$this->table}.{$this->delim}{$column}{$this->delim} = ";
+                if (is_array($value) && isset($value["func"])) {
+                    return $col . $value["func"];
+                }
                 $this->params[] = $value;
-                return "{$this->table}.{$this->delim}{$column}{$this->delim} = ?";
+                return "{$col}?";
             }, $cols, array_keys($cols)));
 
         $query .= " WHERE 1=1" . $this->predicates->convert();
