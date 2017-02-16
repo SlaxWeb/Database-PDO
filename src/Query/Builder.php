@@ -256,7 +256,7 @@ class Builder
     public function update(array $cols): string
     {
         $query = "UPDATE {$this->table} SET "
-            . implode(",", array_map(function ($value, $column) {
+            . implode(",", array_map(function($value, $column) {
                 $col = "{$this->table}.{$this->delim}{$column}{$this->delim} = ";
                 if (is_array($value) && isset($value["func"])) {
                     return $col . $value["func"];
