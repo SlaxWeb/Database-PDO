@@ -92,8 +92,6 @@ class Builder
      * Class constructor
      *
      * Prepare the predictes list by instantiating the first predicate group object.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -176,7 +174,7 @@ class Builder
         return "INSERT INTO {$this->table} ({$this->delim}"
             . implode("{$this->delim},{$this->delim}", array_keys($data))
             . "{$this->delim}) VALUES ("
-            . implode(",", array_map(function ($value, $column) {
+            . implode(",", array_map(function($value) {
                 if (is_array($value) && isset($value["func"])) {
                     return $value["func"];
                 }
@@ -450,7 +448,6 @@ class Builder
      * @param string $primKey Key of the main table for the condition
      * @param string $forKey Key of the joining table
      * @param string $cOpr Comparison operator for the two keys
-     * @param string $lOpr Logical operator for multiple JOIN conditions
      * @return self
      */
     public function orJoinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL): self

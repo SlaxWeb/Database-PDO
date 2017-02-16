@@ -60,7 +60,6 @@ class Group
      * in the SQL DML WHERE statement.
      *
      * @param string $opr Logical operator name, default string("AND")
-     * @return void
      */
     public function __construct(string $opr = "AND")
     {

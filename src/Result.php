@@ -47,7 +47,6 @@ class Result implements ResultInterface
      * Save the raw result data into the protected property '$_rawData'.
      *
      * @param array $rawData Raw data array
-     * @return void
      */
     public function __construct(array $rawData)
     {

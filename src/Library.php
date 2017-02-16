@@ -69,7 +69,6 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      *
      * @param \PDO $pdo PDO instance
      * @param \SlaxWeb\DatabasePDO\Query\Builder $queryBuilder Query Builder instance
-     * @return void
      */
     public function __construct(PDO $pdo, Builder $queryBuilder)
     {
@@ -273,7 +272,6 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * @param string $primKey Key of the main table for the condition
      * @param string $forKey Key of the joining table
      * @param string $cOpr Comparison operator for the two keys
-     * @param string $lOpr Logical operator for multiple JOIN conditions
      * @return void
      */
     public function joinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL)
@@ -289,7 +287,6 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * @param string $primKey Key of the main table for the condition
      * @param string $forKey Key of the joining table
      * @param string $cOpr Comparison operator for the two keys
-     * @param string $lOpr Logical operator for multiple JOIN conditions
      * @return void
      */
     public function orJoinCond(string $primKey, string $forKey, string $cOpr = Predicate::OPR_EQUAL)
