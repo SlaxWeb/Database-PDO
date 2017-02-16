@@ -203,29 +203,11 @@ class Builder
         $query = "SELECT " . $this->buildColList($cols, $this->table);
 
         // create join statements
-        $joinStmnt = "";
-        foreach ($this->joins as $join) {
-            // build the join statement
-            $joinStmnt .= "{$join["type"]} {$join["table"]}";
-            if ($join["type"] !== "CROSS JOIN") {
-                if (empty($join["cond"])) {
-                    throw new \SlaxWeb\DatabasePDO\Exception\NoJoinConditionException(
-                        "A JOIN without a condition is not possible, unless it is a CROSS JOIN."
-                    );
-                }
-                $joinStmnt .= " ON (1=1";
-                foreach ($join["cond"] as $cond) {
-                    $joinStmnt .= " {$cond["lOpr"]} {$this->table}.{$this->delim}{$cond["primKey"]}{$this->delim} "
-                        . "{$cond["cOpr"]} {$join["table"]}.{$this->delim}{$cond["forKey"]}{$this->delim}";
-                }
-                $joinStmnt .= ") ";
-            }
+        $join = $this->getJoinData();
+        $query .= $join["colList"];
 
-            // add joined columns to select column list
-            $query .= $this->buildColList($join["colList"], $join["table"]);
-        }
         $query = rtrim($query, ",");
-        $query .= " FROM {$this->table} {$joinStmnt}WHERE 1=1" . $this->predicates->convert();
+        $query .= " FROM {$this->table} {$join["statement"]}WHERE 1=1" . $this->predicates->convert();
         $this->params = $this->predicates->getParams();
 
         if ($this->groupCols !== []) {
@@ -560,5 +542,45 @@ class Builder
             }
         }
         return $colList;
+    }
+
+    /**
+     * Get Join Data
+     *
+     * Constructs the join statement, and the column list with the joined table(s).
+     * Return is an array of two strings, "statement" containing the join statment
+     * to be appended after "... FROM table" in SQL, and "colList" cotaining comma
+     * separated list of columns to be included in the SELECT statement.
+     *
+     * @return array
+     */
+    protected function getJoinData(): array
+    {
+        $joinData = [
+            "colList"   =>  "",
+            "statement" =>  ""
+        ];
+        foreach ($this->joins as $join) {
+            // build the join statement
+            $joinData["statement"] .= "{$join["type"]} {$join["table"]}";
+            if ($join["type"] !== "CROSS JOIN") {
+                if (empty($join["cond"])) {
+                    throw new \SlaxWeb\DatabasePDO\Exception\NoJoinConditionException(
+                        "A JOIN without a condition is not possible, unless it is a CROSS JOIN."
+                    );
+                }
+                $joinData["statement"] .= " ON (1=1";
+                foreach ($join["cond"] as $cond) {
+                    $joinData["statement"] .= " {$cond["lOpr"]} {$this->table}.{$this->delim}"
+                        . "{$cond["primKey"]}{$this->delim} {$cond["cOpr"]} {$join["table"]}."
+                        . "{$this->delim}{$cond["forKey"]}{$this->delim}";
+                }
+                $joinData["statement"] .= ") ";
+            }
+
+            // add joined columns to select column list
+            $joinData["colList"] .= $this->buildColList($join["colList"], $join["table"]);
+        }
+        return $joinData;
     }
 }
