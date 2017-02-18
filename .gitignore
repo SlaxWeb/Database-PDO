@@ -1,5 +1,6 @@
 composer.lock
 vendor/
 .tags
+tests/_support/_generated/
 
 tests/_output/*
