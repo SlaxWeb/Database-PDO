@@ -22,7 +22,11 @@
     },
     "autoload": {
         "psr-4": {
-            "SlaxWeb\\DatabasePDO\\": "src/",
+            "SlaxWeb\\DatabasePDO\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "SlaxWeb\\DatabasePDO\\Test\\Unit\\": "tests/unit/"
         }
     },
