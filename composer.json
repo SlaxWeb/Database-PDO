@@ -29,10 +29,5 @@
         "psr-4": {
             "SlaxWeb\\DatabasePDO\\Test\\Unit\\": "tests/unit/"
         }
-    },
-    "extra": {
-        "branch-alias": {
-            "dev-master": "0.5.x-dev"
-        }
     }
 }
