@@ -41,7 +41,7 @@ class Provider implements \Pimple\ServiceProviderInterface
             }
 
             try {
-                return new \PDO($dsn, $config["username"], $config["password"]);
+                $pdo = new \PDO($dsn, $config["username"], $config["password"]);
             } catch (\PDOException $e) {
                 $container["logger.service"]()->emergency(
                     "Connection to the database failed.",
@@ -54,6 +54,12 @@ class Provider implements \Pimple\ServiceProviderInterface
                 // we have logged the error, time to rethrow it
                 throw $e;
             }
+
+            if (empty($config["timeout"]) === false) {
+                $pdo->setAttribute(\PDO::ATTR_TIMEOUT, $config["timeout"]);
+            }
+
+            return $pdo;
         };
 
         $container["queryBuilder.service"] = function() {
