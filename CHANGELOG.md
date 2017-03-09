@@ -4,6 +4,8 @@ Changes between version.
 
 ## Current changes
 
+* set connection timeout when instantiating PDO
+
 ## v0.5
 
 ### v0.5.0
