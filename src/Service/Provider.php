@@ -13,6 +13,8 @@
  */
 namespace SlaxWeb\DatabasePDO\Service;
 
+use PDO;
+use PDOException;
 use Pimple\Container;
 
 class Provider implements \Pimple\ServiceProviderInterface
@@ -41,8 +43,13 @@ class Provider implements \Pimple\ServiceProviderInterface
             }
 
             try {
-                $pdo = new \PDO($dsn, $config["username"], $config["password"]);
-            } catch (\PDOException $e) {
+                return new PDO(
+                    $dsn,
+                    $config["username"],
+                    $config["password"],
+                    [PDO::ATTR_TIMEOUT => $config["timeout"] ?? 0]
+                );
+            } catch (PDOException $e) {
                 $container["logger.service"]()->emergency(
                     "Connection to the database failed.",
                     [
@@ -54,12 +61,6 @@ class Provider implements \Pimple\ServiceProviderInterface
                 // we have logged the error, time to rethrow it
                 throw $e;
             }
-
-            if (empty($config["timeout"]) === false) {
-                $pdo->setAttribute(\PDO::ATTR_TIMEOUT, $config["timeout"]);
-            }
-
-            return $pdo;
         };
 
         $container["queryBuilder.service"] = function() {
