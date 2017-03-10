@@ -35,7 +35,7 @@ class Provider implements \Pimple\ServiceProviderInterface
             return new \SlaxWeb\DatabasePDO\Library($container["pdo.service"], $container["queryBuilder.service"]);
         };
 
-        $container["pdo.service"] = function(Container $container) {
+        $container["pdo.service"] = $container->protect(function(Container $container) {
             $config = $container["config.service"]["database.connection"];
             $dsn = "{$config["driver"]}:dbname={$config["database"]};host={$config["hostname"]}";
             if (isset($config["port"]) === true && $config["port"] > 0) {
@@ -61,7 +61,7 @@ class Provider implements \Pimple\ServiceProviderInterface
                 // we have logged the error, time to rethrow it
                 throw $e;
             }
-        };
+        });
 
         $container["queryBuilder.service"] = function() {
             return new \SlaxWeb\DatabasePDO\Query\Builder;
