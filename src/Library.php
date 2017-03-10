@@ -15,6 +15,7 @@
 namespace SlaxWeb\DatabasePDO;
 
 use PDO;
+use Closure;
 use PDOStatement;
 use SlaxWeb\Database\Error;
 use SlaxWeb\DatabasePDO\Query\Builder;
@@ -39,6 +40,13 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * @var \PDO
      */
     protected $pdo = null;
+
+    /**
+     * PDO Lazy Load Closure
+     *
+     * @var \Closure
+     */
+    protected $pdoLoader = null;
 
     /**
      * Query Builder
@@ -67,15 +75,12 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * Initiates the class and assigns the dependencies to local properties for
      * later use.
      *
-     * @param \PDO $pdo PDO instance
+     * @param \Closure $pdoLoader PDO lazy load Closure
      * @param \SlaxWeb\DatabasePDO\Query\Builder $queryBuilder Query Builder instance
      */
-    public function __construct(PDO $pdo, Builder $queryBuilder)
+    public function __construct(Closure $pdoLoader, Builder $queryBuilder)
     {
-        $this->pdo = $pdo;
-        if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === "mysql") {
-            $this->delim = "`";
-        }
+        $this->pdoLoader = $pdoLoader;
         $this->qBuilder = $queryBuilder;
         $this->qBuilder->setDelim($this->delim);
     }
@@ -95,7 +100,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     public function execute(string $query, array $data = []): bool
     {
         $this->qBuilder->reset();
-        if (($this->stmnt = $this->pdo->prepare($query)) === false) {
+        if (($this->stmnt = $this->getPdo()->prepare($query)) === false) {
             $this->setError($query);
             return false;
         }
@@ -383,8 +388,27 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     protected function setError(string $query = "", array $errInfo = [])
     {
         if (empty($errInfo)) {
-            $errInfo = $this->pdo->errorInfo();
+            $errInfo = $this->getPdo()->errorInfo();
         }
         $this->error = new Error($errInfo[2], $query);
+    }
+
+
+    /**
+     * Get PDO
+     *
+     * Gets the PDO from the closure or from the internal property.
+     *
+     * @return \PDO
+     */
+    protected function getPdo(): PDO
+    {
+        if ($this->pdo === null) {
+            $this->pdo = ($this->pdoLoader)();
+            if ($this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === "mysql") {
+                $this->delim = "`";
+            }
+        }
+        return $this->pdo;
     }
 }
