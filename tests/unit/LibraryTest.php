@@ -48,25 +48,29 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
         $data = ["foo" => "bar", "baz" => "qux"];
         $testQuery = "query";
 
-        $pdo = $this->createMock("PDO");
-        $statement = $this->createMock("PDOStatement");
+        $pdoLoader = function () use ($data, $testQuery) {
+            $pdo = $this->createMock("PDO");
+            $statement = $this->createMock("PDOStatement");
 
-        $statement->expects($this->once())
-            ->method("execute")
-            ->with(array_values($data))
-            ->willReturn(true);
+            $statement->expects($this->once())
+                ->method("execute")
+                ->with(array_values($data))
+                ->willReturn(true);
 
-        $pdo->expects($this->once())
-            ->method("prepare")
-            ->with($testQuery)
-            ->willReturn($statement);
+            $pdo->expects($this->once())
+                ->method("prepare")
+                ->with($testQuery)
+                ->willReturn($statement);
+
+            return $pdo;
+        };
 
         $lib = $this->getMockBuilder(Library::class)
             ->disableOriginalConstructor()
             ->setMethods(null)
             ->getMock();
 
-        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
+        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
 
         $this->assertTrue($lib->execute($testQuery, $data));
     }
@@ -109,7 +113,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->method("getParams")
             ->willReturn(array_values($data));
 
-        $lib->__construct($this->createMock("PDO"), $builder);
+        $lib->__construct(function () { return $this->createMock("PDO"); }, $builder);
         $this->assertTrue($lib->insert($this->_testTable, $data));
     }
 
@@ -150,24 +154,31 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
      * Ensure that the 'fetch' method raises an exception when the statement does
      * not yield a valid result set.
      *
-     * @param \LibraryMock $lib Mocked Database Library objecct
      * @return void
-     *
-     * @depends testPrematureFetch
      */
-    public function testInvalidResultFetch(\LibraryMock $lib)
+    public function testInvalidResultFetch()
     {
-        $pdo = $this->createMock("PDO");
-        $statement = $this->createMock("PDOStatement");
-        $statement->expects($this->once())
-            ->method("fetchAll")
-            ->willReturn(null);
+        $pdoLoader = function () {
+            $pdo = $this->createMock("PDO");
+            $statement = $this->createMock("PDOStatement");
+            $statement->expects($this->once())
+                ->method("fetchAll")
+                ->willReturn(null);
 
-        $pdo->expects($this->once())
-            ->method("prepare")
-            ->willReturn($statement);
+            $pdo->expects($this->once())
+                ->method("prepare")
+                ->willReturn($statement);
 
-        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
+            return $pdo;
+        };
+
+        $lib = $this->getMockBuilder(Library::class)
+            ->disableOriginalConstructor()
+            ->setMethods(null)
+            ->setMockClassName("LibraryMock")
+            ->getMock();
+
+        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
 
         $lib->execute("", []);
         try {
@@ -189,24 +200,31 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
      * Ensure that the 'fetch' method will return a propper Result object when everything
      * is ok with the fetching of data from the PDOStatement.
      *
-     * @param \LibraryMock $lib Mocked Database Library objecct
      * @return void
-     *
-     * @depends testPrematureFetch
      */
-    public function testFetch(\LibraryMock $lib)
+    public function testFetch()
     {
-        $pdo = $this->createMock("PDO");
-        $statement = $this->createMock("PDOStatement");
-        $statement->expects($this->once())
-            ->method("fetchAll")
-            ->willReturn([]);
+        $pdoLoader = function () {
+            $pdo = $this->createMock("PDO");
+            $statement = $this->createMock("PDOStatement");
+            $statement->expects($this->once())
+                ->method("fetchAll")
+                ->willReturn(null);
 
-        $pdo->expects($this->once())
-            ->method("prepare")
-            ->willReturn($statement);
+            $pdo->expects($this->once())
+                ->method("prepare")
+                ->willReturn($statement);
 
-        $lib->__construct($pdo, $this->createMock(QueryBuilder::class));
+            return $pdo;
+        };
+
+        $lib = $this->getMockBuilder(Library::class)
+            ->disableOriginalConstructor()
+            ->setMethods(null)
+            ->setMockClassName("LibraryMock")
+            ->getMock();
+
+        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
 
         $lib->execute("", []);
         $this->assertInstanceOf(Result::class, $lib->fetch());
@@ -225,7 +243,7 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
         $cols = ["foo", "bar"];
         $table = "baz";
 
-        $pdo = $this->createMock("PDO");
+        $pdo = function () { $this->createMock("PDO"); };
         $qBuilder = $this->createMock(QueryBuilder::class);
 
         $qBuilder->expects($this->exactly(2))
