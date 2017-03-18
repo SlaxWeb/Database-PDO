@@ -49,13 +49,6 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     protected $pdoLoader = null;
 
     /**
-     * Query Builder
-     *
-     * @var \SlaxWeb\DatabasePDO\Query\Builder
-     */
-    protected $qBuilder = null;
-
-    /**
      * Last Executed Statement
      *
      * @var \PDOStatement
@@ -76,13 +69,10 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      * later use.
      *
      * @param \Closure $pdoLoader PDO lazy load Closure
-     * @param \SlaxWeb\DatabasePDO\Query\Builder $queryBuilder Query Builder instance
      */
-    public function __construct(Closure $pdoLoader, Builder $queryBuilder)
+    public function __construct(Closure $pdoLoader)
     {
         $this->pdoLoader = $pdoLoader;
-        $this->qBuilder = $queryBuilder;
-        $this->qBuilder->setDelim($this->delim);
     }
 
     /**
@@ -99,7 +89,6 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
      */
     public function execute(string $query, array $data = []): bool
     {
-        $this->qBuilder->reset();
         if (($this->stmnt = $this->getPdo()->prepare($query)) === false) {
             $this->setError($query);
             return false;
