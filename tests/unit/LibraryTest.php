@@ -16,7 +16,6 @@ namespace SlaxWeb\DatabasePDO\Test\Unit;
 use SlaxWeb\DatabasePDO\Result;
 use SlaxWeb\DatabasePDO\Library;
 use SlaxWeb\Database\Exception\QueryException;
-use SlaxWeb\DatabasePDO\Query\Builder as QueryBuilder;
 
 class LibraryTest extends \PHPUnit_Framework_TestCase
 {
@@ -70,128 +69,23 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->setMethods(null)
             ->getMock();
 
-        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
+        $lib->__construct($pdoLoader);
 
         $this->assertTrue($lib->execute($testQuery, $data));
     }
 
     /**
-     * Test Insert
-     *
-     * Ensure the insert method works as intended, that it calls the execute method.
-     *
-     * @return void
-     */
-    public function testInsert()
-    {
-        $data = ["foo" => "bar", "baz" => "qux"];
-        $testQuery = "INSERT INTO \"{$this->_testTable}\" (\""
-            . implode("\",\"", array_keys($data))
-            . "\") VALUES ("
-            . rtrim(str_repeat("?,", count($data)), ",")
-            . ");";
-
-        $lib = $this->getMockBuilder(Library::class)
-            ->disableOriginalConstructor()
-            ->setMethods(["execute"])
-            ->getMock();
-
-        $lib->expects($this->once())
-            ->method("execute")
-            ->with($testQuery, array_values($data))
-            ->willReturn(true);
-
-        $builder = $this->getMockBuilder(QueryBuilder::class)
-            ->setMethods(["insert", "getParams"])
-            ->getMock();
-        $builder->expects($this->once())
-            ->method("insert")
-            ->with($data)
-            ->willReturn($testQuery);
-
-        $builder->expects($this->once())
-            ->method("getParams")
-            ->willReturn(array_values($data));
-
-        $lib->__construct(function () { return $this->createMock("PDO"); }, $builder);
-        $this->assertTrue($lib->insert($this->_testTable, $data));
-    }
-
-    /**
      * Test Premature Fetch
      *
-     * Ensure that the fetch method throws the appropriate Exception if called without
-     * executing a statement before.
-     *
-     * @return \LibraryMock
-     */
-    public function testPrematureFetch(): \LibraryMock
-    {
-        $lib = $this->getMockBuilder(Library::class)
-            ->disableOriginalConstructor()
-            ->setMethods(null)
-            ->setMockClassName("LibraryMock")
-            ->getMock();
-
-        try {
-            $lib->fetch();
-        } catch (\SlaxWeb\Database\Exception\NoDataException $e) {
-            $expected = "No statement has yet been executed. Unable to fetch data.";
-            $eMsg = $e->getMessage();
-            $this->assertEquals(
-                $expected,
-                $eMsg,
-                "Raised exception does not yield expected message '{$expected}', actual: '{$eMsg}'"
-            );
-        }
-
-        return $lib;
-    }
-
-    /**
-     * Test Invalid Result Fetch
-     *
-     * Ensure that the 'fetch' method raises an exception when the statement does
-     * not yield a valid result set.
+     * Ensure that the fetch method provides an empty result set when no other statement
+     * has been executed before.
      *
      * @return void
      */
-    public function testInvalidResultFetch()
+    public function testPrematureFetch()
     {
-        $pdoLoader = function () {
-            $pdo = $this->createMock("PDO");
-            $statement = $this->createMock("PDOStatement");
-            $statement->expects($this->once())
-                ->method("fetchAll")
-                ->willReturn(null);
-
-            $pdo->expects($this->once())
-                ->method("prepare")
-                ->willReturn($statement);
-
-            return $pdo;
-        };
-
-        $lib = $this->getMockBuilder(Library::class)
-            ->disableOriginalConstructor()
-            ->setMethods(null)
-            ->setMockClassName("LibraryMock")
-            ->getMock();
-
-        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
-
-        $lib->execute("", []);
-        try {
-            $lib->fetch();
-        } catch (\SlaxWeb\Database\Exception\NoDataException $e) {
-            $expected = "Statement did not yield a valid result set.";
-            $eMsg = $e->getMessage();
-            $this->assertEquals(
-                $expected,
-                $eMsg,
-                "Raised exception does not yield expected message '{$expected}', actual: '{$eMsg}'"
-            );
-        }
+        $result = (new Library(function() {}))->fetch();
+        $this->assertEmpty($result->getResults());
     }
 
     /**
@@ -224,59 +118,9 @@ class LibraryTest extends \PHPUnit_Framework_TestCase
             ->setMockClassName("LibraryMock")
             ->getMock();
 
-        $lib->__construct($pdoLoader, $this->createMock(QueryBuilder::class));
+        $lib->__construct($pdoLoader);
 
         $lib->execute("", []);
         $this->assertInstanceOf(Result::class, $lib->fetch());
-    }
-
-    /**
-     * Test Select
-     *
-     * Ensure that the 'select' method will call the execute method with propper
-     * data that it retrieves from the query builder.
-     *
-     * @return void
-     */
-    public function testSelect()
-    {
-        $cols = ["foo", "bar"];
-        $table = "baz";
-
-        $pdo = function () { $this->createMock("PDO"); };
-        $qBuilder = $this->createMock(QueryBuilder::class);
-
-        $qBuilder->expects($this->exactly(2))
-            ->method("table")
-            ->with($table)
-            ->willReturn($qBuilder);
-
-        $qBuilder->expects($this->exactly(2))
-            ->method("select")
-            ->with($cols)
-            ->willReturn("TEST QUERY");
-
-        $qBuilder->expects($this->exactly(2))
-            ->method("getParams")
-            ->willReturn([]);
-
-        $lib = $this->getMockBuilder(Library::class)
-            ->disableOriginalConstructor()
-            ->setMethods(["execute", "fetch"])
-            ->getMock();
-
-        $lib->expects($this->exactly(2))
-            ->method("execute")
-            ->with("TEST QUERY", [])
-            ->will($this->onConsecutiveCalls(true, false));
-
-        $lib->expects($this->exactly(2))
-            ->method("fetch")
-            ->willReturn($this->createMock(Result::class));
-
-        $lib->__construct($pdo, $qBuilder);
-
-        $this->assertInstanceOf(Result::class, $lib->select($table, $cols));
-        $this->assertInstanceOf(Result::class, $lib->select($table, $cols));
     }
 }
