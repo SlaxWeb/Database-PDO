@@ -32,7 +32,7 @@ class Provider implements \Pimple\ServiceProviderInterface
     public function register(Container $container)
     {
         $container["databaseLibrary.service"] = function(Container $container) {
-            return new \SlaxWeb\DatabasePDO\Library($container["pdo.service"], $container["queryBuilder.service"]);
+            return new \SlaxWeb\DatabasePDO\Library($container["pdo.service"]);
         };
 
         $container["pdo.service"] = $container->protect(function(Container $container) {
@@ -62,9 +62,5 @@ class Provider implements \Pimple\ServiceProviderInterface
                 throw $e;
             }
         });
-
-        $container["queryBuilder.service"] = function() {
-            return new \SlaxWeb\DatabasePDO\Query\Builder;
-        };
     }
 }
