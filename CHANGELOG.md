@@ -5,6 +5,7 @@ Changes between version.
 ## Current changes
 
 * set connection timeout when instantiating PDO
+* remove query builder from the pdo sub-component
 
 ## v0.5
 
