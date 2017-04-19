@@ -12,7 +12,7 @@
         "php":  ">=7.0.0",
         "ext-pdo": "*",
         "slaxweb/database": "dev-release/0.6.0",
-        "slaxweb/config": "~0.2"
+        "slaxweb/config": "dev-release/0.3.0"
     },
     "require-dev": {
         "codeception/codeception": "~2.2",
