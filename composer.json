@@ -18,7 +18,8 @@
         "codeception/codeception": "~2.2",
         "codeception/specify": "*",
         "behat/gherkin": "~4.4",
-        "phpunit/phpunit": "~5.4"
+        "phpunit/phpunit": "~5.4",
+        "mockery/mockery": "~0.9"
     },
     "autoload": {
         "psr-4": {
