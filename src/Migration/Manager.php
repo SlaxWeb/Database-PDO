@@ -14,6 +14,7 @@
  */
 namespace SlaxWeb\DatabasePDO\Migration;
 
+use SlaxWeb\DatabasePDO\Exception\MigrationException;
 use SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException;
 
 class Manager
@@ -53,6 +54,55 @@ class Manager
         $this->repository = rtrim($repository, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->loadStatus("migrations");
         $this->loadStatus("executed");
+    }
+
+    /**
+     * Destructor
+     *
+     * Writes the status files back to the filesystem when the class destructs.
+     */
+    public function __destruct()
+    {
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode($this->migrations)
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode($this->executed)
+        );
+    }
+
+    /**
+     * Create migration
+     *
+     * Copies the migration class file template into the repository, and adds it
+     * to the migrations status file. It takes the name of the migration as input,
+     * this name will be used for the migration class and file name. Returns a bool
+     * status if migration file has been created.
+     *
+     * @param string $name Name of the migration
+     * @return void
+     *
+     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationException
+     */
+    public function create(string $name)
+    {
+        if (preg_match("~^[a-zA-Z]\w*$~", $name) !== 1) {
+            throw new MigrationException(
+                "Can not create migration. '{$name}' is not a valid class name!"
+            );
+        }
+
+        $migration = file_get_contents(__DIR__ . "/Template/MigrationClass.php");
+        $migration = str_replace("MigrationClass", $name, $migration);
+        if (file_put_contents("{$this->repository}{$name}.php", $migration) === false) {
+            throw new MigrationException(
+                "An unexpected error occured when attempting to create the migration file."
+            );
+        }
+
+        $this->migrations[time()] = $name;
     }
 
     /**

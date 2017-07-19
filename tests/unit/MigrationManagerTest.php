@@ -4,6 +4,7 @@ namespace SlaxWeb\DatabasePDO\Test\Unit;
 use Exception;
 use Mockery as m;
 use SlaxWeb\DatabasePDO\Migration\Manager;
+use SlaxWeb\DatabasePDO\Exception\MigrationException;
 use SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException;
 
 class MigrationManagerTest extends \Codeception\Test\Unit
@@ -18,13 +19,12 @@ class MigrationManagerTest extends \Codeception\Test\Unit
     {
         mkdir($this->repository, 0755, true);
         try {
-            $migrationManager = m::mock(Manager::class, array($this->repository));
+            $migrationManager = m::mock(Manager::class, [$this->repository]);
         } catch (MigrationRepositoryException $e) {
             throw new Exception(
                 "No exception was expected with an existing repository directory"
             );
         }
-        $this->recurRmDir($this->repository);
     }
 
     public function testRepositoryCreation()
@@ -34,7 +34,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         }
 
         try {
-            $migrationManager = m::mock(Manager::class, array($this->repository));
+            $migrationManager = m::mock(Manager::class, [$this->repository]);
         } catch (MigrationRepositoryException $e) {
             throw new Exception(
                 "No exception was expected when creating a test repository directory"
@@ -42,7 +42,6 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         }
 
         $this->assertTrue(file_exists($this->repository));
-        $this->recurRmDir($this->repository);
     }
 
     public function testRepositoryWritabilityCheck()
@@ -55,7 +54,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
         $exception = false;
         try {
-            $migrationManager = m::mock(Manager::class, array($this->repository));
+            $migrationManager = m::mock(Manager::class, [$this->repository]);
         } catch (MigrationRepositoryException $e) {
             $exception = true;
             $this->assertEquals(
@@ -66,7 +65,6 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
         $this->assertTrue($exception);
         chmod($this->repository, 0755);
-        $this->recurRmDir($this->repository);
     }
 
     public function testMigrationsFilesCreated()
@@ -78,15 +76,12 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             unlink("{$this->repository}.executed.json");
         }
 
-        $migrationManager = m::mock(Manager::class, array($this->repository));
+        $migrationManager = m::mock(Manager::class, [$this->repository]);
 
         $migrations = json_decode(file_get_contents("{$this->repository}.migrations.json"), true);
         $executed = json_decode(file_get_contents("{$this->repository}.executed.json"), true);
         $this->assertInternalType("array", $migrations);
         $this->assertInternalType("array", $executed);
-
-        unlink("{$this->repository}.migrations.json");
-        unlink("{$this->repository}.executed.json");
     }
 
     public function testMigrationFilesCorruptionHandling()
@@ -97,7 +92,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
         $exception = false;
         try {
-            $migrationManager = m::mock(Manager::class, array($this->repository));
+            $migrationManager = m::mock(Manager::class, [$this->repository]);
         } catch (MigrationRepositoryException $e) {
             $exception = true;
             $this->assertEquals(
@@ -106,9 +101,41 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             );
         }
         $this->assertTrue($exception);
+    }
 
-        unlink("{$this->repository}.migrations.json");
-        unlink("{$this->repository}.executed.json");
+    public function testMigrationCreation()
+    {
+        mkdir($this->repository, 0755, true);
+
+        $migrationManager = new Manager($this->repository);
+        $migrationManager->create("TestMigration");
+        unset($migrationManager);
+
+        $migrations = json_decode(file_get_contents("{$this->repository}.migrations.json"), true);
+
+        $this->assertTrue(
+            file_exists("{$this->repository}TestMigration.php"),
+            "Migration class file was not created"
+        );
+        $this->assertContains(
+            "TestMigration",
+            $migrations,
+            "Migration was not added to the migrations status file."
+        );
+    }
+
+    public function testInvalidMigrationName()
+    {
+        $exception = false;
+        $migrationManager = new Manager($this->repository);
+        try {
+            $migrationManager->create("!TestMigration");
+        } catch (MigrationException $e) {
+            $exception = true;
+        }
+        unset($migrationManager);
+
+        $this->assertTrue($exception, "Expected exception on invalid migration name was not thrown");
     }
 
     protected function _before()
@@ -117,10 +144,10 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
     protected function _after()
     {
+        m::close();
         if (file_exists($this->repository)) {
             $this->recurRmDir($this->repository);
         }
-        m::close();
     }
 
     protected function recurRmDir(string $dir)
