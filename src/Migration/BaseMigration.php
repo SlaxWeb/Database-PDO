@@ -111,7 +111,7 @@ abstract class BaseMigration
      *
      * @return void
      */
-    abstract protected function up();
+    abstract public function up();
 
     /**
      * Reverse migration
@@ -121,5 +121,5 @@ abstract class BaseMigration
      *
      * @return void
      */
-    abstract protected function down();
+    abstract public function down();
 }
