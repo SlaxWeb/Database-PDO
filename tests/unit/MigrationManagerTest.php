@@ -69,6 +69,48 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         $this->recurRmDir($this->repository);
     }
 
+    public function testMigrationsFilesCreated()
+    {
+        if (file_exists("{$this->repository}.migrations.json")) {
+            unlink("{$this->repository}.migrations.json");
+        }
+        if (file_exists("{$this->repository}.executed.json")) {
+            unlink("{$this->repository}.executed.json");
+        }
+
+        $migrationManager = m::mock(Manager::class, array($this->repository));
+
+        $migrations = json_decode(file_get_contents("{$this->repository}.migrations.json"), true);
+        $executed = json_decode(file_get_contents("{$this->repository}.executed.json"), true);
+        $this->assertInternalType("array", $migrations);
+        $this->assertInternalType("array", $executed);
+
+        unlink("{$this->repository}.migrations.json");
+        unlink("{$this->repository}.executed.json");
+    }
+
+    public function testMigrationFilesCorruptionHandling()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents("{$this->repository}.migrations.json", "corrupted");
+        file_put_contents("{$this->repository}.executed.json", "corrupted");
+
+        $exception = false;
+        try {
+            $migrationManager = m::mock(Manager::class, array($this->repository));
+        } catch (MigrationRepositoryException $e) {
+            $exception = true;
+            $this->assertEquals(
+                "Migration file is corrupted!",
+                $e->getMessage()
+            );
+        }
+        $this->assertTrue($exception);
+
+        unlink("{$this->repository}.migrations.json");
+        unlink("{$this->repository}.executed.json");
+    }
+
     protected function _before()
     {
     }
@@ -90,7 +132,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             if (is_dir($file)) {
                 $this->recurRmDir($file);
             } else {
-                unlink($file);
+                unlink($dir . $file);
             }
         }
         rmdir($dir);

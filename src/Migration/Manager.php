@@ -26,6 +26,20 @@ class Manager
     protected $repository = "";
 
     /**
+     * Migrations
+     *
+     * @param array
+     */
+    protected $migrations = [];
+
+    /**
+     * Executed migrations
+     *
+     * @param array
+     */
+    protected $executed = [];
+
+    /**
      * Class constructor
      *
      * Copies the class dependencies into internal properties, and checks if the
@@ -36,7 +50,9 @@ class Manager
     public function __construct(string $repository)
     {
         $this->checkRepository($repository);
-        $this->repository = $repository;
+        $this->repository = rtrim($repository, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        $this->loadStatus("migrations");
+        $this->loadStatus("executed");
     }
 
     /**
@@ -48,6 +64,8 @@ class Manager
      *
      * @param string $repository Migration repository directory
      * @return void
+     *
+     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationRepositoryException
      */
     protected function checkRepository(string $repository)
     {
@@ -71,5 +89,35 @@ class Manager
                 "Received migration repository is not writable!"
             );
         }
+    }
+
+    /**
+     * Load migration status file
+     *
+     * Loads the migration status file, or creates a new one if it does not exist.
+     *
+     * @param string $name Name of the migration file
+     * @return void
+     *
+     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationRepositoryException
+     */
+    protected function loadStatus(string $name)
+    {
+        if (file_exists("{$this->repository}.{$name}.json")) {
+            $this->{$name} = json_decode(
+                file_get_contents("{$this->repository}.{$name}.json"),
+                true
+            );
+            if (is_array($this->{$name}) === false) {
+                throw new MigrationRepositoryException(
+                    "Migration file is corrupted!"
+                );
+            }
+            ksort($this->{$name});
+            return;
+        }
+        // status file does not exist, create an empty one
+        $this->{$name} = [];
+        file_put_contents("{$this->repository}.{$name}.json", json_encode($this->{$name}));
     }
 }
