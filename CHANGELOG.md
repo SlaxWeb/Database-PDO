@@ -2,7 +2,13 @@
 
 Changes between version.
 
-## Current changes
+## v0.6
+
+### v0.6.1
+
+* fix bug in exception namespace names in the Result class
+
+### v0.6.0
 
 * set connection timeout when instantiating PDO
 * remove query builder from the pdo sub-component

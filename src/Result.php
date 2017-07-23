@@ -14,8 +14,8 @@
  */
 namespace SlaxWeb\DatabasePDO;
 
-use Slaxweb\Database\Exception\RowNotFoundException;
-use Slaxweb\Database\Exception\ColumnNotFoundException;
+use SlaxWeb\Database\Exception\RowNotFoundException;
+use SlaxWeb\Database\Exception\ColumnNotFoundException;
 use SlaxWeb\Database\Interfaces\Result as ResultInterface;
 
 class Result implements ResultInterface
