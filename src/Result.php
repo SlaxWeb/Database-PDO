@@ -77,8 +77,10 @@ class Result implements ResultInterface
                 . "not an object."
             );
         }
-        if (isset($this->_rawData[$this->_currRow]->{$name}) === false) {
-            throw new ColumnNotFoundException("The requested column does not exist in the current result set.");
+        if (property_exists($this->_rawData[$this->_currRow], $name) === false) {
+            throw new ColumnNotFoundException(
+                "The requested column does not exist in the current result set."
+            );
         }
         return $this->_rawData[$this->_currRow]->{$name};
     }

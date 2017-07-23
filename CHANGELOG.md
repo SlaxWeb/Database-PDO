@@ -8,6 +8,8 @@ Changes between version.
 
 * properly check if row data is set and is an object when attempting to retrieve
 data from it
+* properly check if the column is set in the current row when attempting to retrieve
+data
 
 ### v0.6.2
 
