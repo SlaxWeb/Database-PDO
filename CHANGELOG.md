@@ -4,6 +4,11 @@ Changes between version.
 
 ## v0.6
 
+### v0.6.3
+
+* properly check if row data is set and is an object when attempting to retrieve
+data from it
+
 ### v0.6.2
 
 * fix error generation bug if PDO error does not provide a valid error message

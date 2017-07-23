@@ -69,8 +69,13 @@ class Result implements ResultInterface
      */
     public function __get(string $name)
     {
-        if (isset($this->_rawData[$this->_currRow]) === false) {
-            throw new RowNotFoundException("The requested row does not exist in the current result set.");
+        if (isset($this->_rawData[$this->_currRow]) === false
+            || is_object($this->_rawData[$this->_currRow]) === false
+        ) {
+            throw new RowNotFoundException(
+                "The requested row does not exist in the current result set, or is "
+                . "not an object."
+            );
         }
         if (isset($this->_rawData[$this->_currRow]->{$name}) === false) {
             throw new ColumnNotFoundException("The requested column does not exist in the current result set.");
