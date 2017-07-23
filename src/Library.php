@@ -141,7 +141,8 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
     /**
      * Set error
      *
-     * Sets the error based on PDOs error info.
+     * Sets the error based on PDOs error info or the received error info array,
+     * and the received query.
      *
      * @param string $query Query that caused the error. Default ""
      * @param array $errInfo Error info array, if left empty PDO Error Info array is obtained
@@ -152,7 +153,7 @@ class Library implements \SlaxWeb\Database\Interfaces\Library
         if (empty($errInfo)) {
             $errInfo = $this->getPdo()->errorInfo();
         }
-        $this->error = new Error($errInfo[2], $query);
+        $this->error = new Error($errInfo[2] ?? "", $query);
     }
 
 

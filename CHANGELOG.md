@@ -4,6 +4,10 @@ Changes between version.
 
 ## v0.6
 
+### v0.6.2
+
+* fix error generation bug if PDO error does not provide a valid error message
+
 ### v0.6.1
 
 * fix bug in exception namespace names in the Result class
