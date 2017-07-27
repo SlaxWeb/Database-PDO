@@ -1,9 +1,9 @@
 <?php
 /**
- * Migration Exception
+ * Migration Exists Exception
  *
- * Thrown if an exception occurs with the migration, either when creating it, executing
- * it, reverting it, or removing it.
+ * Thrown specifically at migration creation, when an migration with the same name
+ * already exists.
  *
  * @package   SlaxWeb\DatabasePDO
  * @author    Tomaz Lovrec <tomaz.lovrec@gmail.com>
@@ -14,6 +14,6 @@
  */
 namespace SlaxWeb\DatabasePDO\Exception;
 
-class MigrationException extends \Exception
+class MigrationExistsException extends \Exception
 {
 }

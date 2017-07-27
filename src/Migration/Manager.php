@@ -15,6 +15,7 @@
 namespace SlaxWeb\DatabasePDO\Migration;
 
 use SlaxWeb\DatabasePDO\Exception\MigrationException;
+use \SlaxWeb\DatabasePDO\Exception\MigrationExistsException;
 use SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException;
 
 class Manager
@@ -84,7 +85,8 @@ class Manager
      * @param string $name Name of the migration
      * @return void
      *
-     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationException
+     * @throws \SlaxWeb\DatabasePDO\Exception\MigrationException
+     *         \SlaxWeb\DatabasePDO\Exception\MigrationExistsException
      */
     public function create(string $name)
     {
@@ -94,9 +96,16 @@ class Manager
             );
         }
 
+        $migrationPath = "{$this->repository}{$name}.php";
+        if (file_exists($migrationPath)) {
+            throw new MigrationExistsException(
+                "Migration '{$name}' already exists. Unable to create."
+            );
+        }
+
         $migration = file_get_contents(__DIR__ . "/Template/MigrationClass.php");
         $migration = str_replace("MigrationClass", $name, $migration);
-        if (file_put_contents("{$this->repository}{$name}.php", $migration) === false) {
+        if (file_put_contents($migrationPath, $migration) === false) {
             throw new MigrationException(
                 "An unexpected error occured when attempting to create the migration file."
             );
@@ -115,7 +124,7 @@ class Manager
      * @param string $repository Migration repository directory
      * @return void
      *
-     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationRepositoryException
+     * @throws \SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException
      */
     protected function checkRepository(string $repository)
     {
@@ -149,7 +158,7 @@ class Manager
      * @param string $name Name of the migration file
      * @return void
      *
-     * @throws \SlaxWeb\DatabasePDO|Exception\MigrationRepositoryException
+     * @throws \SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException
      */
     protected function loadStatus(string $name)
     {
