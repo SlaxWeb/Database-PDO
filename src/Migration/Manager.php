@@ -115,6 +115,27 @@ class Manager
     }
 
     /**
+     * Mark executed
+     *
+     * Marks an migration as executed and writes the executed status file to the
+     * filesystem.
+     *
+     * @param string $migration Migration name
+     * @return void
+     */
+    protected function markExecuted(string $migration)
+    {
+        $this->executed[$migration] = [
+            "time" => time()
+        ];
+
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode($this->executed)
+        );
+    }
+
+    /**
      * Check repository
      *
      * Checks the migration repository derectory, if it exists and is writable.
