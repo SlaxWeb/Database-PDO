@@ -16,12 +16,20 @@
  */
 namespace SlaxWeb\DatabasePDO\Migration;
 
+use PDOException;
 use Psr\Log\LoggerInterface as Logger;
 use SlaxWeb\Database\Interfaces\Library as DB;
 use SlaxWeb\Database\Query\Builder as QueryBuilder;
+use SlaxWeb\DatabasePDO\Exception\MigrationException;
 
 abstract class BaseMigration
 {
+    /**
+     * Migration execution mode constants
+     */
+    const BRING_UP = "up";
+    const TEAR_DOWN = "down";
+
     /**
      * Query builder
      *
@@ -105,21 +113,69 @@ abstract class BaseMigration
     }
 
     /**
+     * Execute migration
+     *
+     * Start the migration by beginning a transaction if the driver supports it,
+     * and depending on the result of the 'up/down' methods either commit it, or
+     * roll it back.
+     *
+     * The input of the method determines if the 'up' or 'down' methods are to be
+     * called. The method takes the class constants 'BRING_UP' or 'TEAR_DOWN' as
+     * input, with 'BRING_UP' as default. If the input is not one of the two, an
+     * exception is thrown.
+     *
+     * @param string $mode Execution mode
+     * @return bool
+     *
+     * @throws \SlaxWeb\DatabasePDO\Exception\MigrationException
+     */
+    public function execute(string $mode = self::BRING_UP): bool
+    {
+        if (in_array($mode, [self::BRING_UP, self::TEAR_DOWN]) === false) {
+            throw new MigrationException(
+                "Unable to execute migration, an unknown mode was requested"
+            );
+        }
+
+        try {
+            $trans = $this->db->beginTransaction();
+        } catch (PDOException $e) {
+            $trans = false;
+        }
+
+        $result = $this->{$mode}();
+
+        if ($trans === true) {
+            if ($result === true) {
+                $this->db->commit();
+            } else {
+                $this->db->rollBack();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Run migration
      *
-     * Executed when migrations are ran against the database.
+     * Executed when migrations are ran against the database. A transaction is automatically
+     * started for you, and you do not need to start it. To commit the transaction
+     * return a bool(true), or bool(false) to rollback the transaction.
      *
-     * @return void
+     * @return bool
      */
-    abstract public function up();
+    abstract protected function up(): bool;
 
     /**
      * Reverse migration
      *
      * Executed when migrations are being rolled back or removed. Logic in this
-     * method should reverse all actions taken in the "up" method.
+     * method should reverse all actions taken in the "up" method. A transaction
+     * is automatically started for you, and you do not need to start it. To commit
+     * the transaction return a bool(true), or bool(false) to rollback the transaction.
      *
-     * @return void
+     * @return bool
      */
-    abstract public function down();
+    abstract protected function down(): bool;
 }
