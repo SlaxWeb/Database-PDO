@@ -14,6 +14,7 @@
  */
 namespace SlaxWeb\DatabasePDO\Migration;
 
+use SlaxWeb\DatabasePDO\Migration\BaseMigration;
 use SlaxWeb\DatabasePDO\Exception\MigrationException;
 use \SlaxWeb\DatabasePDO\Exception\MigrationExistsException;
 use SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException;
@@ -26,6 +27,13 @@ class Manager
      * @var string
      */
     protected $repository = "";
+
+    /**
+     * Migration class loader
+     *
+     * @var callable
+     */
+    protected $loader = null;
 
     /**
      * Migrations
@@ -48,13 +56,16 @@ class Manager
      * retrieved repository directory is writable.
      *
      * @param string $repository Migration repository directory - must be writable.
+     * @param Callable $loader Migration class loader
      */
-    public function __construct(string $repository)
+    public function __construct(string $repository, callable $loader)
     {
         $this->checkRepository($repository);
         $this->repository = rtrim($repository, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
         $this->loadStatus("migrations");
         $this->loadStatus("executed");
+
+        $this->loader = $loader;
     }
 
     /**
@@ -112,6 +123,50 @@ class Manager
         }
 
         $this->migrations[time()] = $name;
+    }
+
+    /**
+     * Run migrations
+     *
+     * Executes all non-executed migrations. Input parameter may also take an array
+     * of migration names, and then only those migrations will be executed, if they
+     * have not been executed before. The second parameter may be set to bool, in
+     * that case, the received migrations will be executed regardless if they have
+     * already been executed before or not. The second parameter has the effect
+     * only if specific migrations are defined in the array.
+     *
+     * Returns an array of migrations that failed when executing.
+     *
+     * @param array $migrations Array of migrations to be executed. Default empty array
+     * @param bool $force Execute specified migrations regardless if they have already been
+     *                    executed, default false
+     * @return array
+     */
+    public function run(array $migrations = [], $force = false): array
+    {
+        $failed = [];
+
+        if (empty($migrations)) {
+            // migrations not passed, ensure we do not force
+            $force = false;
+
+            $migrations = $this->migrations;
+        }
+
+        foreach ($migrations as $migration) {
+            if (array_key_exists($migration, $this->executed) && $force === false) {
+                continue;
+            }
+
+            if ($this->loadMigration($migration)->execute() === false) {
+                $failed[] = $migration;
+                continue;
+            }
+
+            $this->markExecuted($migration);
+        }
+
+        return $failed;
     }
 
     /**
@@ -199,5 +254,30 @@ class Manager
         // status file does not exist, create an empty one
         $this->{$name} = [];
         file_put_contents("{$this->repository}.{$name}.json", json_encode($this->{$name}));
+    }
+
+    /**
+     * Load migration
+     *
+     * Loads the migration class file, and instantiates it. Returns the object of
+     * the migration to the caller.
+     *
+     * @param string $name Name of the migration
+     * @return \SlaxWeb\DatabasePDO\Migration\BaseMigration
+     *
+     * @throws \SlaxWeb\DatabasePDO\Exception\MigrationException
+     */
+    protected function loadMigration(string $name): BaseMigration
+    {
+        $migration = ($this->loader)($name);
+
+        if (!$migration instanceof BaseMigration) {
+            throw new MigrationException(
+                "The loader did not return an expected instance of the BaseMigration "
+                . "class."
+            );
+        }
+
+        return $migration;
     }
 }
