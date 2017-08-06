@@ -19,7 +19,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
     {
         mkdir($this->repository, 0755, true);
         try {
-            $migrationManager = new Manager($this->repository);
+            $migrationManager = new Manager($this->repository, function() {});
         } catch (MigrationRepositoryException $e) {
             throw new Exception(
                 "No exception was expected with an existing repository directory"
@@ -34,7 +34,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         }
 
         try {
-            $migrationManager = new Manager($this->repository);
+            $migrationManager = new Manager($this->repository, function() {});
         } catch (MigrationRepositoryException $e) {
             throw new Exception(
                 "No exception was expected when creating a test repository directory"
@@ -54,7 +54,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
         $exception = false;
         try {
-            $migrationManager = new Manager($this->repository);
+            $migrationManager = new Manager($this->repository, function() {});
         } catch (MigrationRepositoryException $e) {
             $exception = true;
             $this->assertEquals(
@@ -76,7 +76,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             unlink("{$this->repository}.executed.json");
         }
 
-        $migrationManager = new Manager($this->repository);
+        $migrationManager = new Manager($this->repository, function() {});
 
         $migrations = json_decode(file_get_contents("{$this->repository}.migrations.json"), true);
         $executed = json_decode(file_get_contents("{$this->repository}.executed.json"), true);
@@ -92,7 +92,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
 
         $exception = false;
         try {
-            $migrationManager = new Manager($this->repository);
+            $migrationManager = new Manager($this->repository, function() {});
         } catch (MigrationRepositoryException $e) {
             $exception = true;
             $this->assertEquals(
@@ -107,7 +107,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
     {
         mkdir($this->repository, 0755, true);
 
-        $migrationManager = new Manager($this->repository);
+        $migrationManager = new Manager($this->repository, function() {});
         $migrationManager->create("TestMigration");
         unset($migrationManager);
 
@@ -127,7 +127,7 @@ class MigrationManagerTest extends \Codeception\Test\Unit
     public function testInvalidMigrationName()
     {
         $exception = false;
-        $migrationManager = new Manager($this->repository);
+        $migrationManager = new Manager($this->repository, function() {});
         try {
             $migrationManager->create("!TestMigration");
         } catch (MigrationException $e) {
