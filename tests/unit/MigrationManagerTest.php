@@ -157,12 +157,16 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             ->andReturn(true)
             ->getMock();
 
-        (new Manager(
-            $this->repository,
-            function() use ($migration) {
-                return $migration;
-            }
-        ))->run();
+        $this->assertEquals(
+            [],
+            (new Manager(
+                $this->repository,
+                function() use ($migration) {
+                    return $migration;
+                }
+            ))->run(),
+            "Migration execution returned a non-empty array of failed executions"
+        );
 
         $executed = json_decode(
             file_get_contents("{$this->repository}.executed.json"),
@@ -203,7 +207,11 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             }
         );
         $migrationManager->run([], true);
-        $migrationManager->run(["TestMigration1"], true);
+        $this->assertEquals(
+            [],
+            $migrationManager->run(["TestMigration1"], true),
+            "Migration execution returned a non-empty array of failed executions"
+        );
 
         unset($migrationManager);
 
