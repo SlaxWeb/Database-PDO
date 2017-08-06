@@ -4,6 +4,7 @@ namespace SlaxWeb\DatabasePDO\Test\Unit;
 use Exception;
 use Mockery as m;
 use SlaxWeb\DatabasePDO\Migration\Manager;
+use SlaxWeb\DatabasePDO\Migration\BaseMigration;
 use SlaxWeb\DatabasePDO\Exception\MigrationException;
 use SlaxWeb\DatabasePDO\Exception\MigrationRepositoryException;
 
@@ -136,6 +137,45 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         unset($migrationManager);
 
         $this->assertTrue($exception, "Expected exception on invalid migration name was not thrown");
+    }
+
+    public function testMigrationExecution()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode(["TestMigration1", "TestMigration2"])
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode(["TestMigration2" => ["time" => time()]])
+        );
+
+        $migration = m::mock(BaseMigration::class)
+            ->shouldReceive("execute")
+            ->once()
+            ->andReturn(true)
+            ->getMock();
+
+        (new Manager(
+            $this->repository,
+            function() use ($migration) {
+                return $migration;
+            }
+        ))->run();
+
+        $executed = json_decode(
+            file_get_contents("{$this->repository}.executed.json"),
+            true
+        );
+
+        $this->assertArrayHasKey(
+            "TestMigration1",
+            $executed,
+            "'TestMigration1' was not marked executed by Manager"
+        );
+
+        $this->recurRmDir($this->repository);
     }
 
     protected function _before()
