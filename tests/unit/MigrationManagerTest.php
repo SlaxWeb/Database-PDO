@@ -178,6 +178,38 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         $this->recurRmDir($this->repository);
     }
 
+    public function testForcedExecution()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode(["TestMigration1"])
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode(["TestMigration1" => ["time" => time()]])
+        );
+
+        $migration = m::mock(BaseMigration::class)
+            ->shouldReceive("execute")
+            ->once()
+            ->andReturn(true)
+            ->getMock();
+
+        $migrationManager = new Manager(
+            $this->repository,
+            function() use ($migration) {
+                return $migration;
+            }
+        );
+        $migrationManager->run([], true);
+        $migrationManager->run(["TestMigration1"], true);
+
+        unset($migrationManager);
+
+        $this->recurRmDir($this->repository);
+    }
+
     protected function _before()
     {
     }
