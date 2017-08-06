@@ -183,11 +183,6 @@ class Manager
         $this->executed[$migration] = [
             "time" => time()
         ];
-
-        file_put_contents(
-            "{$this->repository}.executed.json",
-            json_encode($this->executed)
-        );
     }
 
     /**
