@@ -218,6 +218,48 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         $this->recurRmDir($this->repository);
     }
 
+    public function testFailedMigration()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode(["TestMigration1"])
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode([])
+        );
+
+        $migration = m::mock(BaseMigration::class)
+            ->shouldReceive("execute")
+            ->once()
+            ->andReturn(false)
+            ->getMock();
+
+        $this->assertEquals(
+            ["TestMigration1"],
+            (new Manager(
+                $this->repository,
+                function() use ($migration) {
+                    return $migration;
+                }
+            ))->run(),
+            "Migration execution returned an empty array of failed executions, when a failure was expected"
+        );
+
+        $executed = json_decode(
+            file_get_contents("{$this->repository}.executed.json"),
+            true
+        );
+
+        $this->assertEmpty(
+            $executed,
+            "Executed migration status file is not empty as expected after revert"
+        );
+
+        $this->recurRmDir($this->repository);
+    }
+
     public function testRevertMigration()
     {
         mkdir($this->repository, 0755, true);
