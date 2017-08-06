@@ -163,26 +163,12 @@ class Manager
                 continue;
             }
 
-            $this->markExecuted($migration);
+            $this->executed[$migration] = [
+                "time" => time()
+            ];
         }
 
         return $failed;
-    }
-
-    /**
-     * Mark executed
-     *
-     * Marks an migration as executed and writes the executed status file to the
-     * filesystem.
-     *
-     * @param string $migration Migration name
-     * @return void
-     */
-    protected function markExecuted(string $migration)
-    {
-        $this->executed[$migration] = [
-            "time" => time()
-        ];
     }
 
     /**
