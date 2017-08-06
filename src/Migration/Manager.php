@@ -172,6 +172,39 @@ class Manager
     }
 
     /**
+     * Revert migrations
+     *
+     * Reverts the already executed migrations. The first input parameter must be
+     * an array of migration names to be reverted. The revert process calls the
+     * 'down' method of the Migration class.
+     *
+     * Returns an array of migrations that failed when executing.
+     *
+     * @param array $migrations Array of migrations to be executed.
+     * @return array
+     */
+    public function revert(array $migrations): array
+    {
+        $failed = [];
+
+        foreach ($migrations as $migration) {
+            if (array_key_exists($migration, $this->executed) === false) {
+                $failed[] = $migration;
+                continue;
+            }
+
+            if ($this->loadMigration($migration)->execute(BaseMigration::TEAR_DOWN) === false) {
+                $failed[] = $migration;
+                continue;
+            }
+
+            unset($this->executed[$migration]);
+        }
+
+        return $failed;
+    }
+
+    /**
      * Check repository
      *
      * Checks the migration repository derectory, if it exists and is writable.
