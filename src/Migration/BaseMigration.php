@@ -82,7 +82,7 @@ abstract class BaseMigration
      *
      * @throws \Exception
      */
-    public function __call(string $name, array $params)
+    public function __call($name, array $params)
     {
         if (method_exists($this->builder->{$name}) === false) {
             $this->logger->error(
