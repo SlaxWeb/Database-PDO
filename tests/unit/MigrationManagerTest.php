@@ -303,6 +303,56 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         $this->recurRmDir($this->repository);
     }
 
+    public function testMigrationRemoval()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode(["TestMigration1"])
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode(["TestMigration1" => ["time" => time()]])
+        );
+        file_put_contents("{$this->repository}TestMigration1.php", "");
+
+        $migration = m::mock(BaseMigration::class)
+            ->shouldReceive("execute")
+            ->once()
+            ->with(BaseMigration::TEAR_DOWN)
+            ->andReturn(true)
+            ->getMock();
+
+        (new Manager(
+            $this->repository,
+            function() use ($migration) {
+                return $migration;
+            }
+        ))->remove("TestMigration1", true);
+
+        $executed = json_decode(
+            file_get_contents("{$this->repository}.executed.json"),
+            true
+        );
+        $migrations = json_decode(
+            file_get_contents("{$this->repository}.migrations.json"),
+            true
+        );
+
+        $this->assertEmpty(
+            $executed,
+            "Executed migration status file is not empty as expected after revert"
+        );
+        $this->assertEmpty(
+            $migrations,
+            "Migrations status file is not empty as expected after revert"
+        );
+        $this->assertFalse(
+            file_exists("{$this->repository}TestMigration1.php"),
+            "Migration class file was not removed as expected"
+        );
+    }
+
     protected function _before()
     {
     }
