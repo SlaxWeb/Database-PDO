@@ -147,7 +147,7 @@ class Manager
             );
         }
 
-        $this->migrations[] = $name;
+        $this->migrations[time()] = $name;
     }
 
     /**
