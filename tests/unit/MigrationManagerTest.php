@@ -104,6 +104,38 @@ class MigrationManagerTest extends \Codeception\Test\Unit
         $this->assertTrue($exception);
     }
 
+    public function testGetMigrations()
+    {
+        mkdir($this->repository, 0755, true);
+        file_put_contents(
+            "{$this->repository}.migrations.json",
+            json_encode(["TestMigration1", "TestMigration2"])
+        );
+        file_put_contents(
+            "{$this->repository}.executed.json",
+            json_encode(["TestMigration1" => ["time" => time()]])
+        );
+
+        $list = (new Manager(
+            $this->repository,
+            function() {}
+        ))->get();
+
+        $this->assertCount(2, $list, "Expected two migrations when retrieving");
+        $this->assertGreaterThanOrEqual(
+            0,
+            $list["TestMigration1"]["executed"],
+            "'TestMigration1' is not marked as executed as expected"
+        );
+        $this->assertEquals(
+            -1,
+            $list["TestMigration2"]["executed"],
+            "'TestMigration2' is marked as executed which was not expected"
+        );
+
+        $this->recurRmDir($this->repository);
+    }
+
     public function testMigrationCreation()
     {
         mkdir($this->repository, 0755, true);
@@ -323,12 +355,12 @@ class MigrationManagerTest extends \Codeception\Test\Unit
             ->andReturn(true)
             ->getMock();
 
-        (new Manager(
-            $this->repository,
-            function() use ($migration) {
-                return $migration;
-            }
-        ))->remove("TestMigration1", true);
+            (new Manager(
+                $this->repository,
+                function() use ($migration) {
+                    return $migration;
+                }
+            ))->remove("TestMigration1", true);
 
         $executed = json_decode(
             file_get_contents("{$this->repository}.executed.json"),

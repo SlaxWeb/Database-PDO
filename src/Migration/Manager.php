@@ -86,6 +86,31 @@ class Manager
     }
 
     /**
+     * Get migrations
+     *
+     * Gathers all the migrations and data, and returns them as an associative array,
+     * where the name of the migration is the key, and the value is the timestamp
+     * when the migration was executed. If the migration was not yet executed, the
+     * value is int(-1).
+     *
+     * @return array<aray<string, string>>
+     */
+    public function get(): array
+    {
+        $list = [];
+
+        foreach ($this->migrations as $migration) {
+            $list[$migration] = [
+                "executed"  =>  isset($this->executed[$migration])
+                    ? $this->executed[$migration]["time"]
+                    : -1
+            ];
+        }
+
+        return $list;
+    }
+
+    /**
      * Create migration
      *
      * Copies the migration class file template into the repository, and adds it
@@ -122,7 +147,7 @@ class Manager
             );
         }
 
-        $this->migrations[time()] = $name;
+        $this->migrations[] = $name;
     }
 
     /**
