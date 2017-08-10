@@ -39,7 +39,7 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
 
         $app["loadMigrationClass.service"] = $app->protect(
             function(string $migration) use ($app) {
-                $className = "\\{$app["migrationNamespace"]}{$name}";
+                $className = "\\{$app["config.service"]["migration.namespace"]}{$name}";
 
                 if (class_exists($className) === false) {
                     throw new Exception MigrationException(
@@ -54,6 +54,11 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
                     $app["logger.service"]()
                 );
             }
-        )
+        );
+
+        $app["autoloader.service"]->addPsr4(
+            $app["config.service"]["migration.namespace"],
+            $app["config.service"]["migration.repository"]
+        );
     }
 }

@@ -17,3 +17,10 @@
  * Default: app/Migrations/
  */
 $configuration["repository"] = __DIR__ . "/../Migrations/";
+
+/*
+ * Migration class namespace
+ *
+ * Default: \App\Migration\
+ */
+$configuration["namespace"] = "\\App\\Migration\\";
