@@ -4,12 +4,18 @@
     "type": "sub",
     "providers": {
         "app": [
-            "\\SlaxWeb\\DatabasePDO\\Service\\Provider"
+            "\\SlaxWeb\\DatabasePDO\\Service\\Provider",
+            "\\SlaxWeb\\DatabasePDO\\Service\\MigrationProvider"
         ],
-        "commands": [],
+        "commands": [
+            "\\SlaxWeb\DatabasePDO\\Command\\Migration\\ListMigration",
+            "\\SlaxWeb\DatabasePDO\\Command\\Migration\\Create"
+        ],
         "hooks": []
     },
-    "configFiles": [],
+    "configFiles": [
+        "migration.php"
+    ],
     "subcomponents": {
         "list": {},
         "required": false,
