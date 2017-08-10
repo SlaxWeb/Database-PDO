@@ -42,7 +42,7 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
                 $className = "\\{$app["config.service"]["migration.namespace"]}{$name}";
 
                 if (class_exists($className) === false) {
-                    throw new Exception MigrationException(
+                    throw new MigrationException(
                         "The migration class '{$className}' was not found. Please check "
                         . "the migration class."
                     );
