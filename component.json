@@ -8,7 +8,7 @@
             "\\SlaxWeb\\DatabasePDO\\Service\\MigrationProvider"
         ],
         "commands": [
-            "\\SlaxWeb\\DatabasePDO\\Command\\Migration\\ListMigration",
+            "\\SlaxWeb\\DatabasePDO\\Command\\Migration\\ListMigrations",
             "\\SlaxWeb\\DatabasePDO\\Command\\Migration\\Create"
         ],
         "hooks": []
