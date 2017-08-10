@@ -15,6 +15,7 @@ namespace SlaxWeb\DatabasePDO\Service;
 
 use Pimple\Container;
 use SlaxWeb\DatabasePDO\Exception\MigrationException;
+use SlaxWeb\DatabasePDO\Migration\Manager as MigrationManager;
 
 class MigrationProvider implements \Pimple\ServiceProviderInterface
 {
