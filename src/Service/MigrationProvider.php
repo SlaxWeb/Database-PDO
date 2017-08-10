@@ -39,7 +39,7 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
 
             return new MigrationManager(
                 $app["config.service"]["migration.repository"],
-                $app["loadmigrationClass.service"]
+                $app["loadMigrationClass.service"]
             );
         };
 
