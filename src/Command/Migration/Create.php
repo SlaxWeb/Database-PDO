@@ -23,7 +23,7 @@ use Symfony\Component\Console\Output\OutputInterface as Output;
  * @link      https://github.com/slaxweb/
  * @version   0.6
  */
-class ListMigrations extends Command
+class Create extends Command
 {
     /**
      * Application instance
