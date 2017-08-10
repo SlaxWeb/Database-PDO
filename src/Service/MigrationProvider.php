@@ -25,14 +25,21 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
      * It should define all the services, or call other methods that define the
      * services.
      *
-     * @param \Pimple\Container $container Dependency Injection Container
+     * @param \Pimple\Container $app Dependency Injection Container
      * @return void
      */
-    public function register(Container $container)
+    public function register(Container $app)
     {
-        $container["loadMigrationClass.service"] = $container->protect(
-            function(string $migration) use ($container) {
-                $className = "\\{$container["migrationNamespace"]}{$name}";
+        $app["migration.service"] = function() {
+            return new MigrationManager(
+                $app["config.service"]["migration.repository"],
+                $app["loadmigrationClass.service"]
+            );
+        };
+
+        $app["loadMigrationClass.service"] = $app->protect(
+            function(string $migration) use ($app) {
+                $className = "\\{$app["migrationNamespace"]}{$name}";
 
                 if (class_exists($className) === false) {
                     throw new Exception MigrationException(
@@ -42,9 +49,9 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
                 }
 
                 return new $className(
-                    $container["queryBuilder.service"],
-                    $container["pdo.service"](),
-                    $container["logger.service"]()
+                    $app["queryBuilder.service"],
+                    $app["pdo.service"](),
+                    $app["logger.service"]()
                 );
             }
         )
