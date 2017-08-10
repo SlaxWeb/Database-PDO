@@ -88,7 +88,12 @@ class ListMigrations extends Command
         foreach ($this->app["migration.service"]->get() as $name => $migration) {
             $this->output->write("{$name}: ");
             if ($migration["executed"] > -1) {
-                $this->output->writeln("<fg=green>EXECUTED</>");
+                $this->output->write("<fg=green>EXECUTED</>");
+                $this->output->write(
+                    " ({$migration["executed"]})",
+                    Output::VERBOSITY_VERBOSE
+                );
+                $this->output->writeln("");
             } else {
                 $this->output->writeln("<fg=red>NOT EXECUTED</>");
             }
