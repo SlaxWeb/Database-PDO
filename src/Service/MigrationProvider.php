@@ -31,6 +31,11 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
     public function register(Container $app)
     {
         $app["migration.service"] = function() {
+            $app["autoloader.service"]->addPsr4(
+                $app["config.service"]["migration.namespace"],
+                $app["config.service"]["migration.repository"]
+            );
+
             return new MigrationManager(
                 $app["config.service"]["migration.repository"],
                 $app["loadmigrationClass.service"]
@@ -54,11 +59,6 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
                     $app["logger.service"]()
                 );
             }
-        );
-
-        $app["autoloader.service"]->addPsr4(
-            $app["config.service"]["migration.namespace"],
-            $app["config.service"]["migration.repository"]
         );
     }
 }
