@@ -109,7 +109,7 @@ class Create extends Command
         }
 
         try {
-            $app["migration.service"]->create($name);
+            $this->app["migration.service"]->create($name);
         } catch (MigrationException $e) {
             $this->output->writeln(
                 "<error>An unexpexted error occured while trying to create the Migration</>"
@@ -123,7 +123,7 @@ class Create extends Command
         $this->output->writeln("<info>Migration successfuly created.</>");
         $this->output->writeln(
             "<comment>Migration file location: "
-            . realpath($app["config.service"]["migration.repository"] . $name)
+            . realpath($this->app["config.service"]["migration.repository"] . $name)
             . "</>",
             Output::VERBOSITY_VERBOSE
         );
