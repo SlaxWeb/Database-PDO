@@ -3,7 +3,6 @@ namespace SlaxWeb\DatabasePDO\Command\Migration;
 
 use SlaxWeb\Bootstrap\Application;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 use SlaxWeb\DatabasePDO\Exception\MigrationException;
 use SlaxWeb\DatabasePDO\Exception\MigrationExistsException;
