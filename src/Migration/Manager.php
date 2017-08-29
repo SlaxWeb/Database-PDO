@@ -234,17 +234,18 @@ class Manager
      *
      * Removes the migration from the filesystem and the status files. If bool(true)
      * is used as the second parameter, the migration will first be reverted, and
-     * then removed, if it was executed before.
+     * then removed, if it was executed before. Returns true, unless the revert
+     * fails.
      *
      * @param string $migration Migration name
      * @param bool $revert Revert the migration before removing, default bool(false)
-     * @return void
+     * @return bool
      */
     public function remove(string $name, bool $revert = false)
     {
         if (isset($this->executed[$name])) {
-            if ($revert) {
-                $this->revert([$name]);
+            if ($revert && empty($this->revert([$name])) === false) {
+                return false;
             }
 
             unset($this->executed[$name]);
@@ -254,6 +255,8 @@ class Manager
         if (($key = array_search($name, $this->migrations)) !== false) {
             unset($this->migrations[$key]);
         }
+
+        return true;
     }
 
     /**
