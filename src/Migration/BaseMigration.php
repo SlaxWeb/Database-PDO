@@ -99,7 +99,7 @@ abstract class BaseMigration
      */
     public function __call($name, array $params)
     {
-        if (method_exists($this->builder->{$name}) === false) {
+        if (method_exists($this->builder, $name) === false) {
             $this->logger->error(
                 "Method is not known for this migration or is not accessible",
                 ["method" => $name]
