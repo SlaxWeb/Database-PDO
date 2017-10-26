@@ -57,6 +57,7 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
                 return new $className(
                     $app["queryBuilder.service"],
                     $app["databaseLibrary.service"],
+                    $app["pdo.service"](),
                     $app["logger.service"]()
                 );
             }

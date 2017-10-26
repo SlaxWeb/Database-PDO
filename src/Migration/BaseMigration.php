@@ -16,6 +16,7 @@
  */
 namespace SlaxWeb\DatabasePDO\Migration;
 
+use PDO;
 use PDOException;
 use Psr\Log\LoggerInterface as Logger;
 use SlaxWeb\Database\Interfaces\Library as DB;
@@ -45,10 +46,18 @@ abstract class BaseMigration
     protected $db = null;
 
     /**
+     * PDO instance
+     *
+     * @var \PDO
+     */
+    protected $pdo = null;
+
+    /**
      * Logger instance
      *
      * @var \Psr\Log\LoggerInterface
      */
+    protected $logger = null;
 
     /**
      * Class constructor
@@ -57,12 +66,18 @@ abstract class BaseMigration
      *
      * @param \SlaxWeb\Database\Query\Builder $queryBuilder Query Builder
      * @param \SlaxWeb\Database\Interface\Library $db Database Library Instance
+     * @param \PDO $pdo PDO instance
      * @param \Psr\Log\LoggerInterface $logger Logger instance
      */
-    public function __construct(QueryBuilder $queryBuilder, DB $db, Logger $logger)
-    {
+    public function __construct(
+        QueryBuilder $queryBuilder,
+        DB $db,
+        PDO $pdo,
+        Logger $logger
+    ) {
         $this->builder = $queryBuilder;
         $this->db = $db;
+        $this->pdo = $pdo;
         $this->logger = $logger;
 
         $this->logger->info("Initialized database migration class", ["class" => get_class($this)]);
@@ -138,7 +153,7 @@ abstract class BaseMigration
         }
 
         try {
-            $trans = $this->db->beginTransaction();
+            $trans = $this->pdo->beginTransaction();
         } catch (PDOException $e) {
             $trans = false;
         }
@@ -147,9 +162,9 @@ abstract class BaseMigration
 
         if ($trans === true) {
             if ($result === true) {
-                $this->db->commit();
+                $this->pdo->commit();
             } else {
-                $this->db->rollBack();
+                $this->pdo->rollBack();
             }
         }
 
