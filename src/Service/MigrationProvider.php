@@ -45,7 +45,7 @@ class MigrationProvider implements \Pimple\ServiceProviderInterface
 
         $app["loadMigrationClass.service"] = $app->protect(
             function(string $migration) use ($app) {
-                $className = "\\{$app["config.service"]["migration.namespace"]}{$name}";
+                $className = "\\{$app["config.service"]["migration.namespace"]}{$migration}";
 
                 if (class_exists($className) === false) {
                     throw new MigrationException(
