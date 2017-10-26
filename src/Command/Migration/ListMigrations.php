@@ -2,6 +2,7 @@
 namespace SlaxWeb\DatabasePDO\Command\Migration;
 
 use SlaxWeb\Bootstrap\Application;
+use SlaxWeb\Slaxer\AbstractCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface as Input;
@@ -19,7 +20,7 @@ use Symfony\Component\Console\Output\OutputInterface as Output;
  * @link      https://github.com/slaxweb/
  * @version   0.6
  */
-class ListMigrations extends Command
+class ListMigrations extends AbstractCommand
 {
     /**
      * Application instance
