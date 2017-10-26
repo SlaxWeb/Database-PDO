@@ -73,7 +73,7 @@ class Remove extends AbstractCommand
                 "Reverts the migration and removes it from the migration repository"
             )->addArgument(
                 "name",
-                InputArgument::IS_ARRAY,
+                InputArgument::REQUIRED,
                 "Name of the migration to revert and remove"
             )->addOption(
                 "no-revert",
