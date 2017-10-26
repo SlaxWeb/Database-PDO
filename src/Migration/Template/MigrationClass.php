@@ -8,14 +8,16 @@ class MigrationClass extends BaseMigration
     /**
      * @inheritDocs
      */
-    protected function up()
+    protected function up(): bool
     {
+        return true;
     }
 
     /**
      * @inheritDocs
      */
-    protected function down()
+    protected function down(): bool
     {
+        return true;
     }
 }
